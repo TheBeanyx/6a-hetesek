@@ -344,7 +344,7 @@
             const newTheme = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
             document.documentElement.setAttribute('data-theme', newTheme);
             if(auth.currentUser) {
-                document.body.style.backgroundImage = newTheme === 'light' ? "url('index.light.png')" : "url('index.dark.png')";
+                document.body.style.backgroundImage = newTheme === 'light' ? "url('background/index.light.png')" : "url('background/index.dark.png')";
             }
         };
         window.openModal = (id) => { closeModals(); document.getElementById(id).style.display = 'flex'; };
