@@ -4,66 +4,86 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;700&display=swap" rel="stylesheet">
-    <title>6.A Hetesek</title>
+    <title>6.A Hetesek - Security Pro</title>
     
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
     <style>
         :root {
-            --bg: #050a14; --bg-gradient: radial-gradient(circle at center, #111827 0%, #050a14 100%);
-            --card: #111827; --accent: #00f6ff; --error: #ff4444; --success: #00ff88; --text: #e2e8f0;
+            --bg: #050a14; 
+            --bg-gradient: radial-gradient(circle at center, #111827 0%, #050a14 100%);
+            --card: #111827;
+            --accent: #00f6ff; --error: #ff4444; --text: #e2e8f0;
             --input-bg: #070c16; --input-border: #333;
         }
         [data-theme="light"] {
-            --bg: #f0f2f5; --bg-gradient: radial-gradient(circle at center, #ffffff 0%, #e5e7eb 100%);
+            --bg: #f0f2f5; 
+            --bg-gradient: radial-gradient(circle at center, #ffffff 0%, #e5e7eb 100%);
             --card: #ffffff; --accent: #0070f3; --text: #1f2937; --input-bg: #f9fafb; --input-border: #d1d5db;
         }
 
         body {
-            margin: 0; font-family: 'Lora', sans-serif; background: var(--bg-gradient);
+            margin: 0; font-family: 'Lora', sans-serif; 
+            background: var(--bg-gradient);
+            background-attachment: fixed;
+            background-size: cover;
+            background-position: center;
             color: var(--text); display: flex; flex-direction: column; align-items: center;
             min-height: 100vh; padding: 20px; transition: 0.3s;
         }
 
-        h1 { color: var(--accent); text-transform: uppercase; letter-spacing: 4px; text-shadow: 0 0 15px rgba(0,246,255,0.4); text-align: center; }
-        
-        .display-container, .tasks-container, .super-container {
+        h1 { color: var(--accent); text-transform: uppercase; letter-spacing: 4px; text-shadow: 0 0 15px rgba(0,246,255,0.4); text-align: center; margin-top: 50px; }
+
+        .display-container, .tasks-container, .next-week-container, .logs-display-container, .admin-panel {
             background: var(--card); border: 1px solid var(--accent); border-radius: 25px;
             padding: 30px; width: 100%; max-width: 450px; text-align: center; margin-bottom: 20px;
             box-shadow: 0 20px 50px rgba(0,0,0,0.5); animation: zoomFade 0.6s ease;
         }
 
         .name-box { font-size: 2.2rem; font-weight: 800; padding: 18px; margin: 12px 0; background: rgba(128,128,128,0.05); border-radius: 15px; border-left: 6px solid var(--accent); min-height: 2.5rem; }
-        .task-list { text-align: left; padding-left: 20px; list-style-type: '⚡ '; font-size: 1.1rem; }
+        .top-controls { position: fixed; top: 20px; right: 20px; display: flex; gap: 8px; z-index: 100; }
         
-        .top-controls { position: fixed; top: 20px; right: 20px; display: flex; gap: 10px; z-index: 100; }
         button { background: var(--card); border: 1px solid var(--accent); color: var(--accent); padding: 8px 12px; border-radius: 10px; cursor: pointer; font-weight: bold; transition: 0.2s; }
         button:hover { background: var(--accent); color: #000; }
         
-        #admin-controls { display: none; flex-direction: column; gap: 10px; align-items: center; margin-top: 20px; width: 100%; }
-        .admin-row { display: flex; gap: 15px; justify-content: center; width: 100%; }
-        .nav-btn { width: 50px; height: 50px; font-size: 1.2rem; }
-        
-        #pause-btn { width: 100%; max-width: 220px; padding: 10px; border: 2px solid var(--accent); border-radius: 15px; }
-        #pause-btn.active { background: var(--accent); color: #000; box-shadow: 0 0 15px var(--accent); }
+        .task-list { list-style: none; padding: 0; text-align: left; }
+        .task-list li { margin: 10px 0; padding-left: 30px; position: relative; }
+        .task-list li::before { content: "⚡"; position: absolute; left: 0; color: var(--accent); }
 
-        .super-container { display: none; max-width: 500px; text-align: left; }
-        .user-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.1); }
-        
-        /* Log stílusok */
-        .log-list { max-height: 200px; overflow-y: auto; font-size: 0.8rem; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 10px; list-style: none; margin-top: 15px; }
-        .log-item { margin-bottom: 5px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 2px; }
-        .log-time { color: var(--accent); font-weight: bold; }
+        .log-list { text-align: left; list-style: none; padding: 0; font-size: 0.85rem; max-height: 300px; overflow-y: auto; }
+        .log-item { padding: 12px; border-bottom: 1px solid rgba(128,128,128,0.2); cursor: pointer; transition: 0.2s; }
+        .log-item:hover { background: rgba(0, 246, 255, 0.1); }
+        .log-time { color: var(--accent); font-weight: bold; display: block; }
 
-        #news-trigger { position: fixed; bottom: 20px; left: 20px; width: 50px; height: 50px; border-radius: 50%; z-index: 1000; display: flex; align-items: center; justify-content: center; background: var(--card); border: 1px solid var(--accent); cursor: pointer; }
-        #news-panel { position: fixed; bottom: 80px; left: 20px; width: 260px; background: var(--card); border: 1px solid var(--accent); padding: 20px; border-radius: 15px; display: none; flex-direction: column; z-index: 1000; }
+        /* USER MANAGEMENT TABLE */
+        .user-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.8rem; }
+        .user-table th, .user-table td { padding: 8px; border-bottom: 1px solid rgba(128,128,128,0.2); text-align: left; }
+        .user-table button { padding: 4px 8px; font-size: 0.7rem; }
+
+        #details-popup {
+            display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: #0b1222; border: 2px solid var(--accent); padding: 20px; border-radius: 20px;
+            z-index: 9999; width: 280px; box-shadow: 0 0 50px rgba(0,0,0,0.9); text-align: center; pointer-events: none;
+        }
 
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); z-index: 2000; align-items: center; justify-content: center; }
-        .modal { background: var(--card); border: 1px solid var(--accent); padding: 30px; border-radius: 25px; width: 300px; text-align: center; }
-        input { width: 100%; padding: 12px; margin: 10px 0; background: var(--input-bg); border: 1px solid var(--input-border); color: var(--text); border-radius: 10px; box-sizing: border-box; }
+        .modal { background: var(--card); border: 1px solid var(--accent); padding: 30px; border-radius: 25px; width: 350px; text-align: center; }
         
+        .urgent-modal { 
+            border: 3px solid var(--error) !important; 
+            animation: pulseRed 2s infinite !important;
+            background: #1a0505 !important;
+        }
+
+        @keyframes pulseRed {
+            0: { box-shadow: 0 0 0 0px rgba(255, 68, 68, 0.7); }
+            70% { box-shadow: 0 0 0 20px rgba(255, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0px rgba(255, 68, 68, 0); }
+        }
+
+        input, select { width: 100%; padding: 12px; margin: 10px 0; background: var(--input-bg); border: 1px solid var(--input-border); color: var(--text); border-radius: 10px; box-sizing: border-box; }
         #toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: var(--card); border: 1px solid var(--accent); padding: 12px 25px; border-radius: 50px; display: none; z-index: 3000; }
-        
+
         @keyframes zoomFade { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
     </style>
 </head>
@@ -71,68 +91,89 @@
 
     <div id="toast"></div>
 
+    <div id="details-popup">
+        <h4 style="color:var(--accent); margin-top:0;">Eszköz információk</h4>
+        <div id="popup-content" style="font-size: 0.9rem; line-height: 1.6;"></div>
+    </div>
+
     <div class="top-controls">
-        <button id="logout-btn" style="display:none; background:var(--error); color:white; border:none;" onclick="handleLogout()">🚪Kijelentkezés</button>
+        <select id="lang-select" onchange="changeLang()" style="width: auto; margin: 0; padding: 5px 10px;">
+            <option value="hu">HU</option>
+            <option value="en">EN</option>
+        </select>
         <button onclick="toggleTheme()">🌓</button>
-        <button onclick="toggleLang()">HU/EN</button>
         <button id="auth-trigger" onclick="openModal('login-modal')">🔑</button>
+        <button id="logout-btn" style="display:none; background:var(--error); color:white; border:none;" onclick="handleLogout()">🚪</button>
     </div>
 
     <h1 id="main-title">Osztály Hetesei</h1>
     <div id="current-date" style="margin-bottom: 20px; opacity: 0.8;"></div>
 
     <div class="display-container">
+        <h3 id="h-eheti">Eheti hetesek</h3>
         <div id="names-area"><div class="name-box">-</div><div class="name-box">-</div></div>
-        <div id="admin-controls">
-            <div class="admin-row">
-                <button class="nav-btn" onclick="step(-1)">❮</button>
-                <button class="nav-btn" onclick="step(1)">❯</button>
-            </div>
-            <button id="pause-btn" onclick="togglePause()">⏸ SZÜNET MÓD</button>
+        <div id="admin-controls" style="display:none; gap:10px; justify-content:center; margin-top:15px;">
+            <button onclick="step(-1)">❮</button>
+            <button onclick="step(1)">❯</button>
+            <button id="pause-btn" onclick="togglePause()">⏸ SZÜNET</button>
         </div>
     </div>
 
-    <div id="super-panel" class="super-container">
-        <h3 style="color:var(--accent); margin-top:0;">Superadmin Kezelőpult</h3>
-        <div id="user-list"></div>
-        <h4 style="color:var(--accent); margin-bottom:5px;">Műveleti Napló (Log)</h4>
-        <ul id="log-list" class="log-list"><li>Betöltés...</li></ul>
+    <div class="next-week-container">
+        <h4 id="h-jovo" style="margin:0; opacity:0.7;">Jövő heti hetesek:</h4>
+        <div id="next-names" style="color:var(--accent); font-weight:bold; margin-top:10px; font-size: 1.2rem;">...</div>
     </div>
 
     <div class="tasks-container">
-        <h3 id="tasks-title">A hetes feladatai</h3>
+        <h3 id="h-feladat">A hetes feladatai</h3>
         <ul class="task-list" id="task-list"></ul>
     </div>
 
-    <div id="news-trigger" onclick="toggleNews()">📢</div>
-    <div id="news-panel">
-        <h4 style="margin:0; color:var(--accent);">Mik az <b>Újdonságok</b>?</h4>
-        <p style="font-size:0.85rem;">🌓Sötét és világos mód<br>🎉 Motiváló confetti szünetekkor és hétvégén<br>⏳ Betöltés animáció <br> 🚪Kilépésgomb <br> 😀 Emojik hozzáadva</p>
-    </div>
-
-    <div id="login-modal" class="modal-overlay">
-        <div class="modal">
-            <h2>Belépés</h2>
-            <input type="text" id="l-user" placeholder="Felhasználónév">
-            <input type="password" id="l-pass" placeholder="Jelszó">
-            <button onclick="handleLogin()" style="width:100%; background:var(--accent); color:#000;">OK</button>
-            <p onclick="openModal('reg-modal')" style="cursor:pointer; font-size:0.8rem; margin-top:15px;">Regisztráció</p>
-            <button onclick="closeModals()" style="background:none; border:none; color:var(--text); margin-top:10px;">Mégse</button>
+    <div id="superadmin-section" class="admin-panel" style="display: none;">
+        <h3 style="color: var(--accent);">Felhasználók Kezelése</h3>
+        <div style="overflow-x: auto;">
+            <table class="user-table">
+                <thead>
+                    <tr>
+                        <th>Email</th>
+                        <th>Rang</th>
+                        <th>Művelet</th>
+                    </tr>
+                </thead>
+                <tbody id="user-list-body"></tbody>
+            </table>
         </div>
     </div>
 
-    <div id="reg-modal" class="modal-overlay">
-        <div class="modal">
-            <h2>Regisztráció</h2>
-            <input type="text" id="r-user" placeholder="Név">
-            <input type="password" id="r-pass" placeholder="Jelszó">
-            <button onclick="handleRegister()" style="width:100%; background:var(--accent); color:#000;">KÉSZ</button>
+    <div id="logs-section" class="logs-display-container" style="display: none;">
+        <h3 style="margin-top:0;">Biztonsági Napló (Naplo)</h3>
+        <p style="font-size: 0.7rem; opacity: 0.6;">(Vidd az egeret a sor fölé a részletekért)</p>
+        <ul id="log-list" class="log-list" style="margin-bottom: 20px;"></ul>
+        <button onclick="window.location.href='logs.html'" style="width: 100%; border-style: dashed; opacity: 0.8;">
+            📑 Összes naplóbejegyzés megnyitása
+        </button>
+    </div>
+
+    <div id="update-modal" class="modal-overlay" style="display: flex;">
+        <div class="modal urgent-modal">
+            <h2 style="color: var(--error);">⚠️ KÖZLEMÉNY</h2>
+            <p style="font-weight: bold;">Frissítettük biztonsági szabályainkat, így kérünk minden felhasználót, hogy regisztráljon ismét.</p>
+            <button onclick="closeModals()" style="width:100%; background:var(--error); color:white; border:none; padding:15px; font-size:1.1rem; cursor:pointer; border-radius:10px;">Bezárás</button>
         </div>
     </div>
+
+    <div id="login-modal" class="modal-overlay"><div class="modal">
+        <h2 id="m-login-title">Belépés</h2>
+        <input type="email" id="l-email" placeholder="E-mail (@creascola.hu)">
+        <input type="password" id="l-pass" placeholder="Jelszó">
+        <button onclick="handleLogin()" style="width:100%; background:var(--accent); color:#000;">OK</button>
+        <button onclick="closeModals()" style="background:none; border:none; color:var(--text); cursor:pointer; margin-top:10px;">Mégse</button>
+    </div></div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, doc, onSnapshot, updateDoc, getDoc, setDoc, collection, getDocs, addDoc, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, doc, onSnapshot, updateDoc, getDoc, collection, addDoc, query, orderBy, limit, serverTimestamp, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCTBGoX-vztuuxOzLz7gkFA4bqiMvKuEwI",
@@ -145,132 +186,167 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+        const auth = getAuth(app);
         const docRef = doc(db, "osztaly", "beallitas");
-        
-        let currentUser = null;
-        let currentLang = 'hu';
-        let isPaused = false;
 
-        // --- NAPLÓZÁS FUNKCIÓ ---
-        async function logAction(action, value = "") {
-            if (!currentUser) return;
+        async function saveLog(text) {
+            const ua = navigator.userAgent;
+            let b = ua.includes("Chrome") ? "Chrome" : ua.includes("Firefox") ? "Firefox" : ua.includes("Safari") ? "Safari" : "Ismeretlen";
+            let os = ua.includes("Win") ? "Windows" : ua.includes("Mac") ? "macOS" : ua.includes("Android") ? "Android" : ua.includes("iPhone") ? "iOS" : "Ismeretlen";
+
             try {
                 await addDoc(collection(db, "naplo"), {
-                    ki: currentUser.nev,
-                    mit: action,
-                    ertek: value,
-                    mikor: new Date().toISOString()
+                    esemeny: text,
+                    idopont: serverTimestamp(),
+                    datum: new Date().toLocaleDateString('hu-HU'),
+                    felhasznalo: auth.currentUser ? auth.currentUser.email : "Rendszer",
+                    os: os, browser: b, res: `${window.screen.width}x${window.screen.height}`
                 });
-            } catch (e) { console.error("Log error", e); }
+            } catch (e) { console.error(e); }
         }
 
-        // --- ADATOK FIGYELÉSE ---
-        onSnapshot(docRef, (snap) => {
-            if (snap.exists()) {
-                const data = snap.data();
-                isPaused = data.isPaused || false;
-                const pBtn = document.getElementById('pause-btn');
-                pBtn.className = isPaused ? "active" : "";
-                pBtn.innerText = isPaused ? "▶ FOLYTATÁS" : "⏸ SZÜNET MÓD";
+        // FELHASZNÁLÓK LISTÁZÁSA (Superadmin funkció)
+        async function loadUsers() {
+            const querySnapshot = await getDocs(collection(db, "felhasznolok"));
+            const tbody = document.getElementById('user-list-body');
+            tbody.innerHTML = "";
+            querySnapshot.forEach((userDoc) => {
+                const userData = userDoc.data();
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${userData.email || 'N/A'}</td>
+                    <td><b style="color:var(--accent)">${userData.rang}</b></td>
+                    <td>
+                        <button onclick="updateUserRank('${userDoc.id}', 'admin')">Admin</button>
+                        <button onclick="updateUserRank('${userDoc.id}', 'user')">User</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
 
-                const now = new Date();
-                const isWeekend = (now.getDay() === 0 || now.getDay() === 6);
-                if (isPaused || isWeekend) setTimeout(() => confetti({particleCount:100, spread:70, origin:{y:0.6}}), 500);
+        window.updateUserRank = async (uid, newRank) => {
+            try {
+                await updateDoc(doc(db, "felhasznolok", uid), { rang: newRank });
+                notify("Rang frissítve: " + newRank);
+                loadUsers();
+                saveLog(`Rang módosítás: ${uid} -> ${newRank}`);
+            } catch (e) { notify("Hiba!", "var(--error)"); }
+        };
 
-                const d = new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate() + 4 - (d.getDay()||7));
-                const week = Math.ceil((((d - new Date(d.getFullYear(),0,1)) / 86400000) + 1)/7);
-                const idx = ((week + (data.offset || 0) - 1) % data.nevsor.length + data.nevsor.length) % data.nevsor.length;
-                const pair = data.nevsor[idx];
-                document.getElementById('names-area').innerHTML = `<div class="name-box">${pair.a}</div><div class="name-box">${pair.b}</div>`;
+        // NAPLÓ FIGYELÉSE
+        onSnapshot(query(collection(db, "naplo"), orderBy("idopont", "desc"), limit(15)), (snap) => {
+            const list = document.getElementById('log-list');
+            if(!list) return;
+            list.innerHTML = "";
+            snap.forEach(doc => {
+                const d = doc.data();
+                const t = d.idopont ? d.idopont.toDate().toLocaleTimeString('hu-HU') : "..";
+                const li = document.createElement('li');
+                li.className = 'log-item';
+                li.innerHTML = `<span class="log-time">${d.datum} ${t}</span><strong>${d.esemeny}</strong><br><small>${d.felhasznalo}</small>`;
+                
+                li.onmouseenter = () => {
+                    const popup = document.getElementById('details-popup');
+                    document.getElementById('popup-content').innerHTML = `💻 <b>OS:</b> ${d.os}<br>🌍 <b>Böngésző:</b> ${d.browser}<br>🖥️ <b>Res:</b> ${d.res}<br>👤 <b>User:</b> ${d.felhasznalo}`;
+                    popup.style.display = 'block';
+                };
+                li.onmouseleave = () => document.getElementById('details-popup').style.display = 'none';
+                list.appendChild(li);
+            });
+        });
+
+        onAuthStateChanged(auth, async (user) => {
+            const logSec = document.getElementById('logs-section');
+            const superSec = document.getElementById('superadmin-section');
+            if (user) {
+                document.getElementById('auth-trigger').style.display = 'none';
+                document.getElementById('logout-btn').style.display = 'block';
+                
+                const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+                document.body.style.backgroundImage = isLight ? "url('index.light.png')" : "url('index.dark.png')";
+
+                const u = await getDoc(doc(db, "felhasznolok", user.uid));
+                if (u.exists()) {
+                    const rang = u.data().rang;
+                    if (rang === "admin" || rang === "superadmin") {
+                        document.getElementById('admin-controls').style.display = 'flex';
+                        logSec.style.display = 'block'; // CSAK ADMIN ÉS SUPERADMIN LÁTJA A NAPLÓT
+                    } else {
+                        logSec.style.display = 'none'; // USER SZINTŰEKNEK ELREJTVE
+                    }
+                    if (rang === "superadmin") {
+                        superSec.style.display = 'block';
+                        loadUsers();
+                    }
+                }
+            } else {
+                document.getElementById('auth-trigger').style.display = 'block';
+                document.getElementById('logout-btn').style.display = 'none';
+                document.getElementById('admin-controls').style.display = 'none';
+                logSec.style.display = 'none';
+                superSec.style.display = 'none';
+                document.body.style.backgroundImage = "";
             }
         });
 
-        // --- ADMIN FUNKCIÓK ---
-        window.step = async (val) => {
-            if(!currentUser || (currentUser.rang !== "admin" && currentUser.rang !== "superadmin")) return;
-            const snap = await getDoc(docRef);
-            const newOffset = (snap.data().offset || 0) + val;
-            await updateDoc(docRef, { offset: newOffset });
-            logAction(val > 0 ? "Léptetés ELŐRE" : "Léptetés HÁTRA", val);
-        };
-
-        window.togglePause = async () => {
-            if(!currentUser || (currentUser.rang !== "admin" && currentUser.rang !== "superadmin")) return;
-            const newState = !isPaused;
-            await updateDoc(docRef, { isPaused: newState });
-            logAction(newState ? "SZÜNET bekapcsolva" : "SZÜNET kikapcsolva");
-            notify(newState ? "Szünet mód BE" : "Szünet mód KI");
-        };
-
-        // --- SUPERADMIN ÉS LOG ---
-        async function loadSuperData() {
-            // Felhasználók
-            const usersSnap = await getDocs(collection(db, "felhasznolok"));
-            const userList = document.getElementById('user-list');
-            userList.innerHTML = "";
-            usersSnap.forEach(uDoc => {
-                const u = uDoc.data();
-                if(u.rang === "superadmin") return;
-                userList.innerHTML += `<div class="user-row"><span>${u.nev} (${u.rang})</span> <button onclick="changeRole('${uDoc.id}', '${u.rang}')">Váltás</button></div>`;
-            });
-            // Logok (valós idejű figyelés)
-            const q = query(collection(db, "naplo"), orderBy("mikor", "desc"), limit(15));
-            onSnapshot(q, (snap) => {
-                const logList = document.getElementById('log-list');
-                logList.innerHTML = "";
-                snap.forEach(lDoc => {
-                    const l = lDoc.data();
-                    const time = new Date(l.mikor).toLocaleTimeString('hu-HU');
-                    logList.innerHTML += `<li class="log-item"><span class="log-time">[${time}]</span> <b>${l.ki}</b>: ${l.mit} ${l.ertek}</li>`;
-                });
-            });
-        }
-
-        window.changeRole = async (uid, cur) => {
-            await updateDoc(doc(db, "felhasznolok", uid), { rang: cur === 'admin' ? 'user' : 'admin' });
-            loadSuperData();
-        };
-
-        // --- LOGIN ---
+        // ADMIN FUNKCIÓK
         window.handleLogin = async () => {
-            const user = document.getElementById('l-user').value.trim();
-            const pass = document.getElementById('l-pass').value;
-            const uSnap = await getDoc(doc(db, "felhasznolok", user));
-            if (uSnap.exists() && uSnap.data().jelszo === pass) {
-                currentUser = { id: user, ...uSnap.data() };
-                notify("Szia, " + user + "!");
-                closeModals();
-                document.getElementById('auth-trigger').style.display = 'none';
-                document.getElementById('logout-btn').style.display = 'block';
-                if(currentUser.rang === "admin" || currentUser.rang === "superadmin") document.getElementById('admin-controls').style.display = 'flex';
-                if(currentUser.rang === "superadmin") { document.getElementById('super-panel').style.display = 'block'; loadSuperData(); }
-            } else { notify("Hibás!", "var(--error)"); }
+            try { 
+                await signInWithEmailAndPassword(auth, document.getElementById('l-email').value, document.getElementById('l-pass').value); 
+                await saveLog("Sikeres belépés");
+                closeModals(); 
+            } catch (e) { notify("Hiba!", "var(--error)"); }
+        };
+        window.handleLogout = async () => { await saveLog("Kilépés"); signOut(auth); };
+        window.step = async (v) => { 
+            const s = await getDoc(docRef); 
+            await updateDoc(docRef, { offset: (s.data().offset || 0) + v }); 
+            await saveLog(`Léptetés (${v > 0 ? '+1' : '-1'})`);
+        };
+        window.togglePause = async () => { 
+            const s = await getDoc(docRef); 
+            const n = !s.data().isPaused;
+            await updateDoc(docRef, { isPaused: n }); 
+            await saveLog(n ? "Szünet AKTIVÁLVA" : "Szünet KIKAPCSOLVA");
         };
 
-        window.handleRegister = async () => {
-            const user = document.getElementById('r-user').value.trim();
-            const pass = document.getElementById('r-pass').value;
-            if(!user || !pass) return;
-            await setDoc(doc(db, "felhasznolok", user), { nev: user, jelszo: pass, rang: "user" });
-            notify("Kész! Lépj be.");
-            openModal('login-modal');
+        const dict = {
+            hu: { title: "Osztály Hetesei", eheti: "Eheti hetesek", jovo: "Jövő heti:", feladat: "Feladatok", tasks: ["Takarítás 🧹", "Tábla 🧼", "Ablakok 🪟", "Székek 🪑", "Hiányzók 📝", "Tanár 🔔"] },
+            en: { title: "Class Monitors", eheti: "Current", jovo: "Next week:", feladat: "Tasks", tasks: ["Cleaning 🧹", "Board 🧼", "Windows 🪟", "Chairs 🪑", "Absentees 📝", "Teacher 🔔"] }
         };
 
-        // --- ALAP UI ---
-        window.handleLogout = () => location.reload();
+        window.changeLang = () => {
+            const l = document.getElementById('lang-select').value;
+            document.getElementById('main-title').innerText = dict[l].title;
+            document.getElementById('h-eheti').innerText = dict[l].eheti;
+            document.getElementById('h-jovo').innerText = dict[l].jovo;
+            document.getElementById('h-feladat').innerText = dict[l].feladat;
+            document.getElementById('task-list').innerHTML = dict[l].tasks.map(t => `<li><b>${t}</b></li>`).join('');
+            document.getElementById('current-date').innerText = new Date().toLocaleDateString(l==='hu'?'hu-HU':'en-US', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
+        };
+
+        onSnapshot(docRef, (snap) => {
+            if (snap.exists()) {
+                const data = snap.data();
+                const d = new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate() + 4 - (d.getDay()||7));
+                const week = Math.ceil((((d - new Date(d.getFullYear(),0,1)) / 86400000) + 1)/7);
+                const offset = data.offset || 0;
+                const cIdx = ((week + offset - 1) % data.nevsor.length + data.nevsor.length) % data.nevsor.length;
+                document.getElementById('names-area').innerHTML = `<div class="name-box">${data.nevsor[cIdx].a}</div><div class="name-box">${data.nevsor[cIdx].b}</div>`;
+                const nIdx = ((week + 1 + offset - 1) % data.nevsor.length + data.nevsor.length) % data.nevsor.length;
+                document.getElementById('next-names').innerText = `${data.nevsor[nIdx].a} és ${data.nevsor[nIdx].b}`;
+                document.getElementById('pause-btn').innerText = data.isPaused ? "▶ FOLYTATÁS" : "⏸ SZÜNET";
+            }
+        });
+
         window.toggleTheme = () => {
-            const theme = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
-            document.documentElement.setAttribute('data-theme', theme);
+            const newTheme = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            if(auth.currentUser) {
+                document.body.style.backgroundImage = newTheme === 'light' ? "url('index.light.png')" : "url('index.dark.png')";
+            }
         };
-        window.toggleLang = () => { currentLang = currentLang === 'hu' ? 'en' : 'hu'; updateUI(); };
-        window.toggleNews = () => { const p = document.getElementById('news-panel'); p.style.display = p.style.display === 'flex' ? 'none' : 'flex'; };
-        function updateUI() {
-            const now = new Date();
-            document.getElementById('current-date').innerText = now.toLocaleDateString(currentLang === 'hu' ? 'hu-HU' : 'en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-            const tasks = currentLang === 'hu' ? ["<b>Takarítás</b> Napközben és napvégén🧹", "<b>Tábla törlés</b> szünetekben  🧼", "<b>Ablakok bezárása</b> nap végén 🪟", "<b>Székek felrakása</b> nap végén 🪑", "<b>Hiányzók</b> számon tartása 📝", "<b>Tanár értesítése </b> 5 perc után🔔"] : ["Cleaning 🧹", "Board 🧼", "Windows 🪟", "Chairs 🪑", "Absentees 📝", "Teacher 🔔"];
-            document.getElementById('task-list').innerHTML = tasks.map(t => `<li>${t}</li>`).join('');
-            document.getElementById('main-title').innerText = currentLang === 'hu' ? "Osztály Hetesei" : "Class Monitors";
-        }
         window.openModal = (id) => { closeModals(); document.getElementById(id).style.display = 'flex'; };
         window.closeModals = () => document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none');
         function notify(msg, color = "var(--accent)") {
@@ -278,7 +354,7 @@
             t.innerText = msg; t.style.borderColor = color; t.style.display = 'block';
             setTimeout(() => t.style.display = 'none', 3000);
         }
-        updateUI();
+        changeLang();
     </script>
 </body>
 </html>
