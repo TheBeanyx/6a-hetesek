@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;700&display=swap" rel="stylesheet">
-    <title>6.A Hetesek - Security Pro</title>
+    <title>6.A Hetesek</title>
     
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
@@ -145,7 +145,7 @@
     </div>
 
     <div id="logs-section" class="logs-display-container" style="display: none;">
-        <h3 style="margin-top:0;">Biztonsági Napló (Naplo)</h3>
+        <h3 style="margin-top:0;">Biztonsági Napló</h3>
         <p style="font-size: 0.7rem; opacity: 0.6;">(Vidd az egeret a sor fölé a részletekért)</p>
         <ul id="log-list" class="log-list" style="margin-bottom: 20px;"></ul>
         <button onclick="window.location.href='logs.html'" style="width: 100%; border-style: dashed; opacity: 0.8;">
@@ -177,7 +177,7 @@
     <div id="register-modal" class="modal-overlay">
         <div class="modal">
             <h2 style="color: var(--accent);">Regisztráció</h2>
-            <input type="text" id="r-name" placeholder="Teljes Név (Min. 2 szó)">
+            <input type="text" id="r-name" placeholder="Teljes Név">
             <input type="email" id="r-email" placeholder="E-mail (@creascola.hu)">
             <input type="password" id="r-pass" placeholder="Jelszó (Min. 8 karakter, betű és szám)">
             <input type="password" id="r-pass2" placeholder="Jelszó mégegyszer">
@@ -351,7 +351,7 @@
         };
 
         const dict = {
-            hu: { title: "Osztály Hetesei", eheti: "Eheti hetesek", jovo: "Jövő heti:", feladat: "Feladatok", tasks: ["Takarítás 🧹", "Tábla 🧼", "Ablakok 🪟", "Székek 🪑", "Hiányzók 📝", "Tanár 🔔"] },
+            hu: { title: "Osztály Hetesei", eheti: "Eheti hetesek", jovo: "Jövő heti:", feladat: "Feladatok", tasks: ["<b>Takarítás</b> nap végén 🧹", "<b>Tábla törlése</b> szünetkeben 🧼", "<b>Ablakok bezárása</b> nap végén  🪟", "<b>Székek felrakása </b> nap végén 🪑", "<b>Hiányzók</b> számon tartása 📝", "<b>Tanár értesítése</b> 5 perc után 🔔"] },
             en: { title: "Class Monitors", eheti: "Current", jovo: "Next week:", feladat: "Tasks", tasks: ["Cleaning 🧹", "Board 🧼", "Windows 🪟", "Chairs 🪑", "Absentees 📝", "Teacher 🔔"] }
         };
 
