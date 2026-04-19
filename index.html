@@ -55,7 +55,6 @@
         .log-item:hover { background: rgba(0, 246, 255, 0.1); }
         .log-time { color: var(--accent); font-weight: bold; display: block; }
 
-        /* USER MANAGEMENT TABLE */
         .user-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.8rem; }
         .user-table th, .user-table td { padding: 8px; border-bottom: 1px solid rgba(128,128,128,0.2); text-align: left; }
         .user-table button { padding: 4px 8px; font-size: 0.7rem; }
@@ -76,7 +75,7 @@
         }
 
         @keyframes pulseRed {
-            0: { box-shadow: 0 0 0 0px rgba(255, 68, 68, 0.7); }
+            0% { box-shadow: 0 0 0 0px rgba(255, 68, 68, 0.7); }
             70% { box-shadow: 0 0 0 20px rgba(255, 68, 68, 0); }
             100% { box-shadow: 0 0 0 0px rgba(255, 68, 68, 0); }
         }
@@ -158,22 +157,39 @@
         <div class="modal urgent-modal">
             <h2 style="color: var(--error);">⚠️ KÖZLEMÉNY</h2>
             <p style="font-weight: bold;">Frissítettük biztonsági szabályainkat, így kérünk minden felhasználót, hogy regisztráljon ismét.</p>
-            <button onclick="closeModals()" style="width:100%; background:var(--error); color:white; border:none; padding:15px; font-size:1.1rem; cursor:pointer; border-radius:10px;">Bezárás</button>
+            <button onclick="location.href='uj.szabaly.html'" style="width:100%; background:var(--error); color:white; border:none; padding:15px; font-size:1.1rem; cursor:pointer; border-radius:10px; margin-bottom: 10px;">Tovább olvasok</button>
+            <button onclick="openModal('register-modal')" style="width:100%; background:var(--error); color:white; border:none; padding:15px; font-size:1.1rem; cursor:pointer; border-radius:10px;">REGISZTRÁCIÓ</button>
         </div>
     </div>
 
-    <div id="login-modal" class="modal-overlay"><div class="modal">
-        <h2 id="m-login-title">Belépés</h2>
-        <input type="email" id="l-email" placeholder="E-mail (@creascola.hu)">
-        <input type="password" id="l-pass" placeholder="Jelszó">
-        <button onclick="handleLogin()" style="width:100%; background:var(--accent); color:#000;">OK</button>
-        <button onclick="closeModals()" style="background:none; border:none; color:var(--text); cursor:pointer; margin-top:10px;">Mégse</button>
-    </div></div>
+    <div id="login-modal" class="modal-overlay">
+        <div class="modal">
+            <h2 id="m-login-title">Belépés</h2>
+            <input type="email" id="l-email" placeholder="E-mail (@creascola.hu)">
+            <input type="password" id="l-pass" placeholder="Jelszó">
+            <button onclick="handleLogin()" style="width:100%; background:var(--accent); color:#000;">OK</button>
+            <button onclick="openModal('register-modal')" style="background:none; border:none; color:var(--accent); cursor:pointer; margin-top:10px;">Nincs fiókom? Regisztráció</button>
+            <br>
+            <button onclick="closeModals()" style="background:none; border:none; color:var(--text); cursor:pointer; margin-top:10px;">Mégse</button>
+        </div>
+    </div>
+
+    <div id="register-modal" class="modal-overlay">
+        <div class="modal">
+            <h2 style="color: var(--accent);">Regisztráció</h2>
+            <input type="text" id="r-name" placeholder="Teljes Név (Min. 2 szó)">
+            <input type="email" id="r-email" placeholder="E-mail (@creascola.hu)">
+            <input type="password" id="r-pass" placeholder="Jelszó (Min. 8 karakter, betű és szám)">
+            <input type="password" id="r-pass2" placeholder="Jelszó mégegyszer">
+            <button onclick="handleRegister()" style="width:100%; background:var(--accent); color:#000; margin-top:10px;">REGISZTRÁCIÓ</button>
+            <button onclick="closeModals()" style="background:none; border:none; color:var(--text); cursor:pointer; margin-top:10px;">Mégse</button>
+        </div>
+    </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, doc, onSnapshot, updateDoc, getDoc, collection, addDoc, query, orderBy, limit, serverTimestamp, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, doc, onSnapshot, updateDoc, getDoc, collection, addDoc, query, orderBy, limit, serverTimestamp, getDocs, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCTBGoX-vztuuxOzLz7gkFA4bqiMvKuEwI",
@@ -205,7 +221,6 @@
             } catch (e) { console.error(e); }
         }
 
-        // FELHASZNÁLÓK LISTÁZÁSA (Superadmin funkció)
         async function loadUsers() {
             const querySnapshot = await getDocs(collection(db, "felhasznolok"));
             const tbody = document.getElementById('user-list-body');
@@ -234,7 +249,6 @@
             } catch (e) { notify("Hiba!", "var(--error)"); }
         };
 
-        // NAPLÓ FIGYELÉSE
         onSnapshot(query(collection(db, "naplo"), orderBy("idopont", "desc"), limit(15)), (snap) => {
             const list = document.getElementById('log-list');
             if(!list) return;
@@ -271,9 +285,9 @@
                     const rang = u.data().rang;
                     if (rang === "admin" || rang === "superadmin") {
                         document.getElementById('admin-controls').style.display = 'flex';
-                        logSec.style.display = 'block'; // CSAK ADMIN ÉS SUPERADMIN LÁTJA A NAPLÓT
+                        logSec.style.display = 'block';
                     } else {
-                        logSec.style.display = 'none'; // USER SZINTŰEKNEK ELREJTVE
+                        logSec.style.display = 'none';
                     }
                     if (rang === "superadmin") {
                         superSec.style.display = 'block';
@@ -290,7 +304,6 @@
             }
         });
 
-        // ADMIN FUNKCIÓK
         window.handleLogin = async () => {
             try { 
                 await signInWithEmailAndPassword(auth, document.getElementById('l-email').value, document.getElementById('l-pass').value); 
@@ -298,6 +311,32 @@
                 closeModals(); 
             } catch (e) { notify("Hiba!", "var(--error)"); }
         };
+
+        // REGISZTRÁCIÓ LOGIKA
+        window.handleRegister = async () => {
+            const name = document.getElementById('r-name').value.trim();
+            const email = document.getElementById('r-email').value.trim();
+            const pass = document.getElementById('r-pass').value;
+            const pass2 = document.getElementById('r-pass2').value;
+
+            if (name.split(' ').length < 2) return notify("Teljes név szükséges (min. 2 szó)!", "var(--error)");
+            if (!email.endsWith("@creascola.hu")) return notify("Csak @creascola.hu cím engedélyezett!", "var(--error)");
+            if (!/^(?=.*[A-Za-z])(?=.*\d).{8,}$/.test(pass)) return notify("Jelszó: min. 8 karakter, betű és szám!", "var(--error)");
+            if (pass !== pass2) return notify("A jelszavak nem egyeznek!", "var(--error)");
+
+            try {
+                const cred = await createUserWithEmailAndPassword(auth, email, pass);
+                await setDoc(doc(db, "felhasznolok", cred.user.uid), {
+                    email: email,
+                    nev: name,
+                    rang: "user"
+                });
+                await saveLog("Új regisztráció: " + email);
+                notify("Sikeres regisztráció!");
+                closeModals();
+            } catch (e) { notify("Hiba: " + e.message, "var(--error)"); }
+        };
+
         window.handleLogout = async () => { await saveLog("Kilépés"); signOut(auth); };
         window.step = async (v) => { 
             const s = await getDoc(docRef); 
@@ -351,8 +390,10 @@
         window.closeModals = () => document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none');
         function notify(msg, color = "var(--accent)") {
             const t = document.getElementById('toast');
-            t.innerText = msg; t.style.borderColor = color; t.style.display = 'block';
-            setTimeout(() => t.style.display = 'none', 3000);
+            if(t) {
+                t.innerText = msg; t.style.borderColor = color; t.style.display = 'block';
+                setTimeout(() => t.style.display = 'none', 3000);
+            }
         }
         changeLang();
     </script>
