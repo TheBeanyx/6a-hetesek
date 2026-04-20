@@ -3,104 +3,62 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kapcsolat és Ügyintézés - 6.A</title>
+    <title>Ügyfélkapu Javított - 6.A</title>
     <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #050a14; 
-            --bg-gradient: radial-gradient(circle at center, #111827 0%, #050a14 100%);
-            --card: #111827;
-            --accent: #00f6ff; 
-            --error: #ff4444; 
-            --text: #e2e8f0;
-            --input-bg: #070c16; 
-            --input-border: #333;
+            --bg: #050a14; --card: #111827; --accent: #00f6ff; --error: #ff4444; --text: #e2e8f0;
+            --input-bg: #070c16; --input-border: #333; --admin-color: #ffaa00;
         }
-
-        body {
-            margin: 0; font-family: 'Lora', sans-serif; 
-            background: var(--bg-gradient);
-            background-attachment: fixed;
-            color: var(--text); display: flex; flex-direction: column; align-items: center;
-            min-height: 100vh; padding: 20px;
-        }
-
-        h1 { color: var(--accent); text-transform: uppercase; letter-spacing: 4px; text-shadow: 0 0 15px rgba(0,246,255,0.4); text-align: center; margin-top: 30px; }
-
-        .container {
-            background: var(--card); border: 1px solid var(--accent); border-radius: 25px;
-            padding: 30px; width: 100%; max-width: 500px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-            animation: fadeIn 0.5s ease;
-        }
-
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        label { display: block; margin-top: 15px; font-weight: bold; color: var(--accent); font-size: 0.9rem; }
-
-        input, select, textarea {
-            width: 100%; padding: 12px; margin-top: 8px; 
-            background: var(--input-bg); border: 1px solid var(--input-border); 
-            color: var(--text); border-radius: 10px; box-sizing: border-box;
-            font-family: inherit; transition: 0.3s;
-        }
-
-        input:focus, textarea:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 10px rgba(0,246,255,0.2); }
-
-        textarea { height: 120px; resize: none; }
-
-        button {
-            width: 100%; background: var(--card); border: 1px solid var(--accent); 
-            color: var(--accent); padding: 15px; border-radius: 10px; 
-            cursor: pointer; font-weight: bold; margin-top: 25px; transition: 0.3s;
-            text-transform: uppercase; letter-spacing: 2px;
-        }
-
-        button:hover:not(:disabled) { background: var(--accent); color: #000; box-shadow: 0 0 20px rgba(0,246,255,0.4); }
-        button:disabled { opacity: 0.5; cursor: not-allowed; border-color: #555; color: #555; }
-
-        #status-msg { 
-            margin-top: 20px; padding: 15px; border-radius: 10px; 
-            text-align: center; font-weight: bold; display: none; 
-        }
-
-        .back-link { margin-top: 30px; color: var(--text); text-decoration: none; opacity: 0.6; transition: 0.3s; }
-        .back-link:hover { opacity: 1; color: var(--accent); }
+        body { margin: 0; font-family: 'Lora', sans-serif; background: var(--bg); color: var(--text); display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        .container { background: var(--card); border: 1px solid var(--accent); border-radius: 20px; padding: 20px; width: 100%; max-width: 800px; margin-bottom: 20px; display: none; }
+        .issue-card { background: rgba(255,255,255,0.03); border: 1px solid #333; margin-bottom: 12px; border-radius: 12px; overflow: hidden; }
+        .issue-header { padding: 15px; cursor: pointer; display: flex; justify-content: space-between; background: rgba(255,255,255,0.02); }
+        .issue-content { display: none; padding: 15px; border-top: 1px solid #222; background: rgba(0,0,0,0.3); }
+        .chat-container { margin-top: 10px; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 10px; max-height: 200px; overflow-y: auto; }
+        .msg { margin-bottom: 8px; padding: 8px; border-radius: 8px; font-size: 0.85rem; border-left: 3px solid var(--accent); }
+        input, textarea { width: 100%; padding: 10px; margin: 5px 0; background: var(--input-bg); border: 1px solid var(--input-border); color: var(--text); border-radius: 8px; box-sizing: border-box; }
+        button { background: var(--accent); color: #000; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; }
+        .status-badge { font-size: 0.7rem; padding: 2px 5px; border-radius: 4px; background: #444; }
     </style>
 </head>
 <body>
 
-    <h1>Ügyfélkapu</h1>
+    <h2 style="color:var(--accent)">Ügyfélkapu rendszere</h2>
 
-    <div class="container">
-        <h3 style="margin-top:0; text-align: center;">Új ügy bejelentése</h3>
-        
-        <form id="complaint-form">
-            <label>Tárgy</label>
-            <input type="text" id="subject" placeholder="Mi az ügy lényege?" required>
-
-            <label>Láthatóság</label>
-            <select id="visibility">
-                <option value="public">Publikus (Mindenki látja)</option>
-                <option value="private">Privát (Csak Adminok látják)</option>
-            </select>
-
-            <label>Részletes leírás</label>
-            <textarea id="message" placeholder="Írd le a részleteket..." required></textarea>
-
-            <button type="submit" id="submit-btn">Küldés a rendszerbe</button>
-        </form>
-
-        <div id="status-msg"></div>
+    <div id="login-section" class="container" style="display: block; max-width: 400px;">
+        <h3>Bejelentkezés</h3>
+        <input type="email" id="l-email" placeholder="E-mail">
+        <input type="password" id="l-pass" placeholder="Jelszó">
+        <button id="l-btn">BELÉPÉS</button>
     </div>
 
-    <a href="hetesek.html" class="back-link">❮ Vissza a főoldalra</a>
+    <div id="create-section" class="container">
+        <form id="issue-form">
+            <div style="display:flex; gap:10px;">
+                <select id="f-theme" style="background:#000; color:white; padding:10px; border-radius:8px;">
+                    <option>Panasz</option><option>Sikertelen esemény</option><option>Ötlet</option>
+                </select>
+                <select id="f-vis" style="background:#000; color:white; padding:10px; border-radius:8px;">
+                    <option value="public">🌍 Publikus</option><option value="private">🔒 Privát</option>
+                </select>
+            </div>
+            <input type="text" id="f-subject" placeholder="Tárgy" required>
+            <textarea id="f-text" placeholder="Leírás..." required></textarea>
+            <button type="submit">ÜGY BEKÜLDÉSE</button>
+        </form>
+    </div>
+
+    <div id="list-section" class="container">
+        <h3>Aktuális ügyek</h3>
+        <div id="issue-list">Várakozás a bejelentkezésre...</div>
+    </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, where, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        // Konfiguráció a hetesek.html-ből
         const firebaseConfig = {
             apiKey: "AIzaSyCTBGoX-vztuuxOzLz7gkFA4bqiMvKuEwI",
             authDomain: "hetesek-6.firebaseapp.com",
@@ -114,72 +72,121 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        const form = document.getElementById('complaint-form');
-        const btn = document.getElementById('submit-btn');
-        const statusMsg = document.getElementById('status-msg');
-        let userEmail = null;
+        let userEmail = "";
+        let userRole = "user";
 
-        // Felhasználó ellenőrzése
-        onAuthStateChanged(auth, (user) => {
+        // Login gomb eseménykezelő fix
+        document.getElementById('l-btn').onclick = async () => {
+            const e = document.getElementById('l-email').value;
+            const p = document.getElementById('l-pass').value;
+            try { await signInWithEmailAndPassword(auth, e, p); }
+            catch (err) { alert("Hiba: " + err.message); }
+        };
+
+        onAuthStateChanged(auth, async (user) => {
             if (user) {
                 userEmail = user.email;
-            } else {
-                statusMsg.style.display = "block";
-                statusMsg.style.background = "rgba(255, 68, 68, 0.1)";
-                statusMsg.style.color = "var(--error)";
-                statusMsg.innerText = "Hiba: Csak bejelentkezett felhasználók nyithatnak ügyet!";
-                btn.disabled = true;
+                try {
+                    const d = await getDoc(doc(db, "felhasznolok", user.uid));
+                    if(d.exists()) userRole = d.data().rang;
+                } catch(e) { console.log("Rang nem lekérhető, alapértelmezett: user"); }
+                
+                document.getElementById('login-section').style.display = 'none';
+                document.getElementById('create-section').style.display = 'block';
+                document.getElementById('list-section').style.display = 'block';
+                loadIssues();
             }
         });
 
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
+        function loadIssues() {
+            const list = document.getElementById('issue-list');
+            const q = query(collection(db, "panaszok"), orderBy("idopont", "desc"));
             
-            if (!userEmail) return;
+            onSnapshot(q, (snap) => {
+                list.innerHTML = "";
+                if(snap.empty) { list.innerHTML = "Nincsenek megjeleníthető ügyek."; return; }
 
-            btn.disabled = true;
-            btn.innerText = "FELDOLGOZÁS...";
-            statusMsg.style.display = "none";
+                snap.forEach(d => {
+                    const data = d.data();
+                    const id = d.id;
+                    const isAdmin = (userRole === 'admin' || userRole === 'superadmin');
 
-            try {
-                // Panasz mentése
-                await addDoc(collection(db, "panaszok"), {
-                    targy: document.getElementById('subject').value,
-                    szoveg: document.getElementById('message').value,
-                    tipus: document.getElementById('visibility').value,
-                    bekuldo: userEmail,
-                    statusz: "nyitott",
-                    idopont: serverTimestamp(),
-                    datum: new Date().toLocaleDateString('hu-HU')
+                    if (isAdmin || data.bekuldo === userEmail || data.tipus === 'public') {
+                        const card = document.createElement('div');
+                        card.className = 'issue-card';
+                        card.innerHTML = `
+                            <div class="issue-header" id="h-${id}">
+                                <div><span class="status-badge">${data.statusz}</span> <b>${data.targy}</b></div>
+                                <small>${data.bekuldo.split('@')[0]} ▾</small>
+                            </div>
+                            <div class="issue-content" id="c-${id}">
+                                <p style="font-size:0.9rem; border-bottom:1px solid #444; padding-bottom:5px;">${data.szoveg}</p>
+                                <div class="chat-container" id="chat-${id}">Betöltés...</div>
+                                <div style="display:flex; gap:5px; margin-top:10px;">
+                                    <input type="text" id="in-${id}" placeholder="Válasz...">
+                                    <button style="width:auto;" id="btn-${id}">Küldés</button>
+                                </div>
+                            </div>
+                        `;
+                        list.appendChild(card);
+                        
+                        // Lenyitás esemény
+                        document.getElementById(`h-${id}`).onclick = () => {
+                            const content = document.getElementById(`c-${id}`);
+                            content.style.display = content.style.display === 'block' ? 'none' : 'block';
+                        };
+
+                        // Válasz gomb esemény
+                        document.getElementById(`btn-${id}`).onclick = () => window.reply(id);
+
+                        loadChat(id);
+                    }
                 });
+            }, (error) => {
+                list.innerHTML = "<span style='color:red;'>Hiba a betöltésnél: " + error.message + "</span>";
+            });
+        }
 
-                // Naplózás
-                await addDoc(collection(db, "naplo"), {
-                    esemeny: "Új panasz beküldve: " + document.getElementById('subject').value,
-                    felhasznalo: userEmail,
-                    idopont: serverTimestamp(),
-                    datum: new Date().toLocaleDateString('hu-HU'),
-                    os: navigator.platform,
-                    browser: "Web-App"
+        window.reply = async (id) => {
+            const txt = document.getElementById(`in-${id}`).value;
+            if(!txt) return;
+            await addDoc(collection(db, "hozzaszolasok"), {
+                issueId: id,
+                text: txt,
+                user: userEmail.split('@')[0],
+                role: userRole,
+                idopont: serverTimestamp()
+            });
+            document.getElementById(`in-${id}`).value = "";
+        };
+
+        function loadChat(issueId) {
+            const q = query(collection(db, "hozzaszolasok"), where("issueId", "==", issueId), orderBy("idopont", "asc"));
+            onSnapshot(q, (snap) => {
+                const chat = document.getElementById(`chat-${issueId}`);
+                if(!chat) return;
+                chat.innerHTML = "";
+                snap.forEach(d => {
+                    const c = d.data();
+                    chat.innerHTML += `<div class="msg"><b>${c.user}:</b> ${c.text}</div>`;
                 });
+                chat.scrollTop = chat.scrollHeight;
+            }, (err) => { console.error("Chat hiba:", err); });
+        }
 
-                statusMsg.style.display = "block";
-                statusMsg.style.background = "rgba(0, 246, 255, 0.1)";
-                statusMsg.style.color = "var(--accent)";
-                statusMsg.innerText = "Sikeres beküldés! Az adminok látni fogják az ügyet.";
-                form.reset();
-
-            } catch (error) {
-                console.error("Hiba történt:", error);
-                statusMsg.style.display = "block";
-                statusMsg.style.background = "rgba(255, 68, 68, 0.1)";
-                statusMsg.style.color = "var(--error)";
-                statusMsg.innerText = "Hiba történt: " + error.message;
-            } finally {
-                btn.disabled = false;
-                btn.innerText = "KÜLDÉS A RENDSZERBE";
-            }
-        });
+        document.getElementById('issue-form').onsubmit = async (e) => {
+            e.preventDefault();
+            await addDoc(collection(db, "panaszok"), {
+                tema: document.getElementById('f-theme').value,
+                targy: document.getElementById('f-subject').value,
+                szoveg: document.getElementById('f-text').value,
+                tipus: document.getElementById('f-vis').value,
+                bekuldo: userEmail,
+                statusz: "nyitott",
+                idopont: serverTimestamp()
+            });
+            document.getElementById('issue-form').reset();
+        };
     </script>
 </body>
 </html>
