@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;700&display=swap" rel="stylesheet">
-    <title>6.A Hetesek</title>
+    <title>6.A Hetesek - Security Pro</title>
     
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
@@ -102,7 +102,7 @@
         </select>
         <button onclick="toggleTheme()">🌓</button>
         <button id="auth-trigger" onclick="openModal('login-modal')">🔑</button>
-        <button id="logout-btn" style="display:none; background:var(--error); color:white; border:none;" onclick="handleLogout()">🚪</button>
+        <button id="logout-btn" style="display:none; background:var(--error); color:white; border:none;" onclick="handleLogout()">🚪Kijelntkezés </button>
     </div>
 
     <h1 id="main-title">Osztály Hetesei</h1>
@@ -145,7 +145,7 @@
     </div>
 
     <div id="logs-section" class="logs-display-container" style="display: none;">
-        <h3 style="margin-top:0;">Biztonsági Napló</h3>
+        <h3 style="margin-top:0;">Biztonsági Napló (Naplo)</h3>
         <p style="font-size: 0.7rem; opacity: 0.6;">(Vidd az egeret a sor fölé a részletekért)</p>
         <ul id="log-list" class="log-list" style="margin-bottom: 20px;"></ul>
         <button onclick="window.location.href='logs.html'" style="width: 100%; border-style: dashed; opacity: 0.8;">
@@ -153,12 +153,12 @@
         </button>
     </div>
 
-    <div id="update-modal" class="modal-overlay" style="display: flex;">
+    <div id="update-modal" class="modal-overlay">
         <div class="modal urgent-modal">
             <h2 style="color: var(--error);">⚠️ KÖZLEMÉNY</h2>
             <p style="font-weight: bold;">Frissítettük biztonsági szabályainkat, így kérünk minden felhasználót, hogy regisztráljon ismét.</p>
             <button onclick="location.href='uj.szabaly.html'" style="width:100%; background:var(--error); color:white; border:none; padding:15px; font-size:1.1rem; cursor:pointer; border-radius:10px; margin-bottom: 10px;">Tovább olvasok</button>
-            <button onclick="openModal('register-modal')" style="width:100%; background:var(--error); color:white; border:none; padding:15px; font-size:1.1rem; cursor:pointer; border-radius:10px;">REGISZTRÁCIÓ</button>
+            <button onclick="handleAnnouncementAck()" style="width:100%; background:var(--error); color:white; border:none; padding:15px; font-size:1.1rem; cursor:pointer; border-radius:10px;">REGISZTRÁCIÓ</button>
         </div>
     </div>
 
@@ -177,7 +177,7 @@
     <div id="register-modal" class="modal-overlay">
         <div class="modal">
             <h2 style="color: var(--accent);">Regisztráció</h2>
-            <input type="text" id="r-name" placeholder="Teljes Név">
+            <input type="text" id="r-name" placeholder="Teljes Név (Min. 2 szó)">
             <input type="email" id="r-email" placeholder="E-mail (@creascola.hu)">
             <input type="password" id="r-pass" placeholder="Jelszó (Min. 8 karakter, betű és szám)">
             <input type="password" id="r-pass2" placeholder="Jelszó mégegyszer">
@@ -189,7 +189,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, doc, onSnapshot, updateDoc, getDoc, collection, addDoc, query, orderBy, limit, serverTimestamp, getDocs, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, createUserWithEmailAndPassword, sendEmailVerification } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCTBGoX-vztuuxOzLz7gkFA4bqiMvKuEwI",
@@ -204,6 +204,30 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
         const docRef = doc(db, "osztaly", "beallitas");
+
+        // --- JAVÍTOTT MENTÉSI LOGIKA ---
+        function checkAnnouncement() {
+            try {
+                const isRead = localStorage.getItem('announcementRead');
+                if (isRead !== 'true') {
+                    document.getElementById('update-modal').style.display = 'flex';
+                }
+            } catch (e) {
+                // Ha a localStorage le van tiltva, mutassuk az ablakot
+                document.getElementById('update-modal').style.display = 'flex';
+            }
+        }
+
+        window.handleAnnouncementAck = () => {
+            try {
+                localStorage.setItem('announcementRead', 'true');
+            } catch (e) {
+                console.error("Nem sikerült menteni a localStorage-ba");
+            }
+            document.getElementById('update-modal').style.display = 'none';
+            openModal('register-modal');
+        };
+        // ------------------------------
 
         async function saveLog(text) {
             const ua = navigator.userAgent;
@@ -306,13 +330,17 @@
 
         window.handleLogin = async () => {
             try { 
-                await signInWithEmailAndPassword(auth, document.getElementById('l-email').value, document.getElementById('l-pass').value); 
+                const userCred = await signInWithEmailAndPassword(auth, document.getElementById('l-email').value, document.getElementById('l-pass').value); 
+                if (!userCred.user.emailVerified) {
+                    notify("Kérjük, előbb erősítsd meg az e-mail címedet!", "var(--error)");
+                    await signOut(auth);
+                    return;
+                }
                 await saveLog("Sikeres belépés");
                 closeModals(); 
             } catch (e) { notify("Hiba!", "var(--error)"); }
         };
 
-        // REGISZTRÁCIÓ LOGIKA
         window.handleRegister = async () => {
             const name = document.getElementById('r-name').value.trim();
             const email = document.getElementById('r-email').value.trim();
@@ -326,13 +354,21 @@
 
             try {
                 const cred = await createUserWithEmailAndPassword(auth, email, pass);
+                
+                // --- E-MAIL MEGERŐSÍTÉS KÜLDÉSE ---
+                await sendEmailVerification(cred.user);
+                
                 await setDoc(doc(db, "felhasznolok", cred.user.uid), {
                     email: email,
                     nev: name,
                     rang: "user"
                 });
-                await saveLog("Új regisztráció: " + email);
-                notify("Sikeres regisztráció!");
+                
+                await saveLog("Új regisztráció (megerősítés kiküldve): " + email);
+                notify("Sikeres regisztráció! Ellenőrizd az e-mailedet a megerősítéshez.");
+                
+                // Kijelentkeztetés a megerősítésig
+                await signOut(auth);
                 closeModals();
             } catch (e) { notify("Hiba: " + e.message, "var(--error)"); }
         };
@@ -350,10 +386,12 @@
             await saveLog(n ? "Szünet AKTIVÁLVA" : "Szünet KIKAPCSOLVA");
         };
 
+
         const dict = {
-            hu: { title: "Osztály Hetesei", eheti: "Eheti hetesek", jovo: "Jövő heti:", feladat: "Feladatok", tasks: ["<b>Takarítás</b> nap végén 🧹", "<b>Tábla törlése</b> szünetkeben 🧼", "<b>Ablakok bezárása</b> nap végén  🪟", "<b>Székek felrakása </b> nap végén 🪑", "<b>Hiányzók</b> számon tartása 📝", "<b>Tanár értesítése</b> 5 perc után 🔔"] },
+            hu: { title: "Osztály Hetesei", eheti: "Eheti hetesek", jovo: "Jövő heti:", feladat: "Feladatok", tasks: ["<b>Takarítás</b> nap végén 🧹", "<b>Tábla törlése </b> szünetkben 🧼", "<b>Ablakok bezárása </b> nap végén 🪟", "<b>Székek felrakása </b> nap végén 🪑", "<b>Hiányzók</b> számon tartása 📝", "<b>Tanár értesítése</b> 5 perc után 🔔"] },
             en: { title: "Class Monitors", eheti: "Current", jovo: "Next week:", feladat: "Tasks", tasks: ["Cleaning 🧹", "Board 🧼", "Windows 🪟", "Chairs 🪑", "Absentees 📝", "Teacher 🔔"] }
         };
+
 
         window.changeLang = () => {
             const l = document.getElementById('lang-select').value;
@@ -396,6 +434,9 @@
             }
         }
         changeLang();
+        
+        // INDÍTÁS
+        checkAnnouncement();
     </script>
 </body>
 </html>
