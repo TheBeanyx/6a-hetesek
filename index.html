@@ -1,442 +1,117 @@
 <!DOCTYPE html>
 <html lang="hu">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;700&display=swap" rel="stylesheet">
-    <title>6.A Hetesek - Security Pro</title>
-    
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-
-    <style>
-        :root {
-            --bg: #050a14; 
-            --bg-gradient: radial-gradient(circle at center, #111827 0%, #050a14 100%);
-            --card: #111827;
-            --accent: #00f6ff; --error: #ff4444; --text: #e2e8f0;
-            --input-bg: #070c16; --input-border: #333;
-        }
-        [data-theme="light"] {
-            --bg: #f0f2f5; 
-            --bg-gradient: radial-gradient(circle at center, #ffffff 0%, #e5e7eb 100%);
-            --card: #ffffff; --accent: #0070f3; --text: #1f2937; --input-bg: #f9fafb; --input-border: #d1d5db;
-        }
-
-        body {
-            margin: 0; font-family: 'Lora', sans-serif; 
-            background: var(--bg-gradient);
-            background-attachment: fixed;
-            background-size: cover;
-            background-position: center;
-            color: var(--text); display: flex; flex-direction: column; align-items: center;
-            min-height: 100vh; padding: 20px; transition: 0.3s;
-        }
-
-        h1 { color: var(--accent); text-transform: uppercase; letter-spacing: 4px; text-shadow: 0 0 15px rgba(0,246,255,0.4); text-align: center; margin-top: 50px; }
-
-        .display-container, .tasks-container, .next-week-container, .logs-display-container, .admin-panel {
-            background: var(--card); border: 1px solid var(--accent); border-radius: 25px;
-            padding: 30px; width: 100%; max-width: 450px; text-align: center; margin-bottom: 20px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5); animation: zoomFade 0.6s ease;
-        }
-
-        .name-box { font-size: 2.2rem; font-weight: 800; padding: 18px; margin: 12px 0; background: rgba(128,128,128,0.05); border-radius: 15px; border-left: 6px solid var(--accent); min-height: 2.5rem; }
-        .top-controls { position: fixed; top: 20px; right: 20px; display: flex; gap: 8px; z-index: 100; }
-        
-        button { background: var(--card); border: 1px solid var(--accent); color: var(--accent); padding: 8px 12px; border-radius: 10px; cursor: pointer; font-weight: bold; transition: 0.2s; }
-        button:hover { background: var(--accent); color: #000; }
-        
-        .task-list { list-style: none; padding: 0; text-align: left; }
-        .task-list li { margin: 10px 0; padding-left: 30px; position: relative; }
-        .task-list li::before { content: "⚡"; position: absolute; left: 0; color: var(--accent); }
-
-        .log-list { text-align: left; list-style: none; padding: 0; font-size: 0.85rem; max-height: 300px; overflow-y: auto; }
-        .log-item { padding: 12px; border-bottom: 1px solid rgba(128,128,128,0.2); cursor: pointer; transition: 0.2s; }
-        .log-item:hover { background: rgba(0, 246, 255, 0.1); }
-        .log-time { color: var(--accent); font-weight: bold; display: block; }
-
-        .user-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.8rem; }
-        .user-table th, .user-table td { padding: 8px; border-bottom: 1px solid rgba(128,128,128,0.2); text-align: left; }
-        .user-table button { padding: 4px 8px; font-size: 0.7rem; }
-
-        #details-popup {
-            display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            background: #0b1222; border: 2px solid var(--accent); padding: 20px; border-radius: 20px;
-            z-index: 9999; width: 280px; box-shadow: 0 0 50px rgba(0,0,0,0.9); text-align: center; pointer-events: none;
-        }
-
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); z-index: 2000; align-items: center; justify-content: center; }
-        .modal { background: var(--card); border: 1px solid var(--accent); padding: 30px; border-radius: 25px; width: 350px; text-align: center; }
-        
-        .urgent-modal { 
-            border: 3px solid var(--error) !important; 
-            animation: pulseRed 2s infinite !important;
-            background: #1a0505 !important;
-        }
-
-        @keyframes pulseRed {
-            0% { box-shadow: 0 0 0 0px rgba(255, 68, 68, 0.7); }
-            70% { box-shadow: 0 0 0 20px rgba(255, 68, 68, 0); }
-            100% { box-shadow: 0 0 0 0px rgba(255, 68, 68, 0); }
-        }
-
-        input, select { width: 100%; padding: 12px; margin: 10px 0; background: var(--input-bg); border: 1px solid var(--input-border); color: var(--text); border-radius: 10px; box-sizing: border-box; }
-        #toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: var(--card); border: 1px solid var(--accent); padding: 12px 25px; border-radius: 50px; display: none; z-index: 3000; }
-
-        @keyframes zoomFade { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;700&display=swap" rel="stylesheet">
+<title>6.A Hetesek - Security Pro</title>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+<style>
+:root { --bg: #050a14; --card: #111827; --accent: #ff0000; --error: #ff4444; --text: #e2e8f0; --input-bg: #070c16; --input-border: #333; }
+body { margin: 0; font-family: 'Lora', sans-serif; background: #050a14; color: var(--text); display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding: 20px; }
+h1 { color: #ff0000; text-transform: uppercase; letter-spacing: 4px; text-shadow: 0 0 15px rgba(255,0,0,0.7); text-align: center; margin-top: 30px; animation: glitch 1s infinite; }
+@keyframes glitch {
+  0%,100% { text-shadow: 0 0 15px rgba(255,0,0,0.7); transform: none; }
+  20% { text-shadow: -2px 0 cyan, 2px 0 red; transform: skewX(-2deg); }
+  40% { text-shadow: 2px 0 cyan, -2px 0 red; transform: skewX(2deg); }
+  60% { text-shadow: 0 0 15px rgba(255,0,0,0.7); transform: none; }
+}
+.hack-banner { background: #ff0000; color: white; padding: 12px 25px; border-radius: 10px; font-weight: bold; font-size: 1.1rem; margin: 10px 0 20px; text-align: center; animation: pulse 1s infinite; width: 100%; max-width: 450px; box-sizing: border-box; }
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.7; } }
+.display-container, .tasks-container, .next-week-container { background: #1a0505; border: 2px solid #ff0000; border-radius: 25px; padding: 30px; width: 100%; max-width: 450px; text-align: center; margin-bottom: 20px; box-shadow: 0 0 30px rgba(255,0,0,0.3); box-sizing: border-box; }
+.name-box { font-size: 2.2rem; font-weight: 800; padding: 18px; margin: 12px 0; background: rgba(255,0,0,0.1); border-radius: 15px; border-left: 6px solid #ff0000; color: #ff4444; }
+.task-list { list-style: none; padding: 0; text-align: left; }
+.task-list li { margin: 10px 0; padding-left: 30px; position: relative; }
+.task-list li::before { content: "⚠"; position: absolute; left: 0; color: #ff0000; }
+.terminal { background: #000; border: 1px solid #ff0000; border-radius: 10px; padding: 15px; font-family: monospace; font-size: 0.8rem; text-align: left; margin: 15px 0; max-height: 120px; overflow: hidden; }
+.terminal-line { color: #ff0000; margin: 3px 0; opacity: 0; animation: appear 0.1s forwards; }
+.terminal-line.green { color: #00ff00; }
+.top-bar { position: relative; width: 100%; max-width: 450px; display: flex; justify-content: flex-end; gap: 8px; margin-bottom: 10px; }
+button { background: #1a0505; border: 1px solid #ff0000; color: #ff0000; padding: 8px 12px; border-radius: 10px; cursor: pointer; font-weight: bold; }
+@keyframes appear { to { opacity: 1; } }
+#skull { font-size: 3rem; text-align: center; animation: spin 2s linear infinite; display: block; }
+@keyframes spin { 0% { transform: rotate(0deg); } 25% { transform: rotate(-10deg); } 75% { transform: rotate(10deg); } 100% { transform: rotate(0deg); } }
+.scanline { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,0,0,0.03) 2px, rgba(255,0,0,0.03) 4px); pointer-events: none; z-index: 9999; }
+.ip-tag { font-size: 0.75rem; color: #ff4444; opacity: 0.8; text-align: center; margin-bottom: 5px; font-family: monospace; }
+</style>
 </head>
 <body>
+<div class="scanline"></div>
 
-    <div id="toast"></div>
+<div class="top-bar">
+  <button>🌓</button>
+  <button style="background:#ff0000; color:white; border:none;">⚠ HACKED</button>
+</div>
 
-    <div id="details-popup">
-        <h4 style="color:var(--accent); margin-top:0;">Eszköz információk</h4>
-        <div id="popup-content" style="font-size: 0.9rem; line-height: 1.6;"></div>
-    </div>
+<span id="skull">💀</span>
+<h1>RENDSZER FELTÖRVE</h1>
+<div class="ip-tag" id="ip-display">Kapcsolódva: 192.168.1.??  |  Hozzáférés: TELJES  |  Rang: SUPERADMIN</div>
 
-    <div class="top-controls">
-        <select id="lang-select" onchange="changeLang()" style="width: auto; margin: 0; padding: 5px 10px;">
-            <option value="hu">HU</option>
-            <option value="en">EN</option>
-        </select>
-        <button onclick="toggleTheme()">🌓</button>
-        <button id="auth-trigger" onclick="openModal('login-modal')">🔑</button>
-        <button id="logout-btn" style="display:none; background:var(--error); color:white; border:none;" onclick="handleLogout()">🚪Kijelntkezés </button>
-    </div>
+<div class="hack-banner">
+  ⚠️ BIZTONSÁGI RIADÓ — JOGOSULATLAN HOZZÁFÉRÉS ⚠️
+</div>
 
-    <h1 id="main-title">Osztály Hetesei</h1>
-    <div id="current-date" style="margin-bottom: 20px; opacity: 0.8;"></div>
+<div class="display-container">
+  <h3 style="color:#ff0000;">☠ FELTÖRT HETESEK</h3>
+  <div class="terminal" id="terminal"></div>
+  <div class="name-box" id="hacker-name">B4l4zs H4ck3r</div>
+  <div class="name-box">4DM1N_0WN3D</div>
+</div>
 
-    <div class="display-container">
-        <h3 id="h-eheti">Eheti hetesek</h3>
-        <div id="names-area"><div class="name-box">-</div><div class="name-box">-</div></div>
-        <div id="admin-controls" style="display:none; gap:10px; justify-content:center; margin-top:15px;">
-            <button onclick="step(-1)">❮</button>
-            <button onclick="step(1)">❯</button>
-            <button id="pause-btn" onclick="togglePause()">⏸ SZÜNET</button>
-        </div>
-    </div>
+<div class="next-week-container">
+  <h4 style="margin:0; color:#ff4444;">Jövő heti hetesek:</h4>
+  <div style="color:#ff0000; font-weight:bold; margin-top:10px; font-size:1.2rem;">SZINTÉN HACK3LVE 💀</div>
+</div>
 
-    <div class="next-week-container">
-        <h4 id="h-jovo" style="margin:0; opacity:0.7;">Jövő heti hetesek:</h4>
-        <div id="next-names" style="color:var(--accent); font-weight:bold; margin-top:10px; font-size: 1.2rem;">...</div>
-    </div>
+<div class="tasks-container">
+  <h3 style="color:#ff0000;">☠ HACKER FELADATOK</h3>
+  <ul class="task-list">
+    <li>Admin jogok megszerzése ✓</li>
+    <li>Összes adat letöltve ✓</li>
+    <li>Tűzfal megkerülve ✓</li>
+    <li>Firebase rules kikapcsolva ✓</li>
+    <li>Barátom teljesen be van szarva 😂</li>
+  </ul>
+</div>
 
-    <div class="tasks-container">
-        <h3 id="h-feladat">A hetes feladatai</h3>
-        <ul class="task-list" id="task-list"></ul>
-    </div>
+<script>
+const lines = [
+  { text: "[SYS] Kapcsolódás: hetesek-6.firebaseapp.com...", delay: 0, green: false },
+  { text: "[SYS] Tűzfal megkerülése...", delay: 400, green: false },
+  { text: "[OK]  Permission bypass: SIKERES", delay: 900, green: true },
+  { text: "[SYS] Felhasználói adatbázis betöltése...", delay: 1300, green: false },
+  { text: "[OK]  Admin jogok megszerzése: SIKERES", delay: 1800, green: true },
+  { text: "[SYS] Rang módosítás: user -> SUPERADMIN", delay: 2200, green: false },
+  { text: "[OK]  !!!RENDSZER ÁTVÉVE!!!", delay: 2700, green: true },
+];
 
-    <div id="superadmin-section" class="admin-panel" style="display: none;">
-        <h3 style="color: var(--accent);">Felhasználók Kezelése</h3>
-        <div style="overflow-x: auto;">
-            <table class="user-table">
-                <thead>
-                    <tr>
-                        <th>Email</th>
-                        <th>Rang</th>
-                        <th>Művelet</th>
-                    </tr>
-                </thead>
-                <tbody id="user-list-body"></tbody>
-            </table>
-        </div>
-    </div>
+const terminal = document.getElementById('terminal');
+lines.forEach((line) => {
+  setTimeout(() => {
+    const div = document.createElement('div');
+    div.className = 'terminal-line' + (line.green ? ' green' : '');
+    div.textContent = line.text;
+    terminal.appendChild(div);
+    terminal.scrollTop = terminal.scrollHeight;
+  }, line.delay);
+});
 
-    <div id="logs-section" class="logs-display-container" style="display: none;">
-        <h3 style="margin-top:0;">Biztonsági Napló (Naplo)</h3>
-        <p style="font-size: 0.7rem; opacity: 0.6;">(Vidd az egeret a sor fölé a részletekért)</p>
-        <ul id="log-list" class="log-list" style="margin-bottom: 20px;"></ul>
-        <button onclick="window.location.href='logs.html'" style="width: 100%; border-style: dashed; opacity: 0.8;">
-            📑 Összes naplóbejegyzés megnyitása
-        </button>
-    </div>
+const fakeIPs = ['192.168.1.42', '10.0.0.69', '172.16.254.1'];
+document.getElementById('ip-display').textContent = 
+  `Kapcsolódva: ${fakeIPs[Math.floor(Math.random()*fakeIPs.length)]}  |  Hozzáférés: TELJES  |  Rang: SUPERADMIN`;
 
-    <div id="update-modal" class="modal-overlay">
-        <div class="modal urgent-modal">
-            <h2 style="color: var(--error);">⚠️ KÖZLEMÉNY</h2>
-            <p style="font-weight: bold;">Frissítettük biztonsági szabályainkat, így kérünk minden felhasználót, hogy regisztráljon ismét.</p>
-            <button onclick="location.href='uj.szabaly.html'" style="width:100%; background:var(--error); color:white; border:none; padding:15px; font-size:1.1rem; cursor:pointer; border-radius:10px; margin-bottom: 10px;">Tovább olvasok</button>
-            <button onclick="handleAnnouncementAck()" style="width:100%; background:var(--error); color:white; border:none; padding:15px; font-size:1.1rem; cursor:pointer; border-radius:10px;">REGISZTRÁCIÓ</button>
-        </div>
-    </div>
+setTimeout(() => {
+  if(typeof confetti !== 'undefined') {
+    confetti({ particleCount: 100, spread: 70, colors: ['#ff0000', '#ff4444', '#ff0000'] });
+  }
+}, 3000);
 
-    <div id="login-modal" class="modal-overlay">
-        <div class="modal">
-            <h2 id="m-login-title">Belépés</h2>
-            <input type="email" id="l-email" placeholder="E-mail (@creascola.hu)">
-            <input type="password" id="l-pass" placeholder="Jelszó">
-            <button onclick="handleLogin()" style="width:100%; background:var(--accent); color:#000;">OK</button>
-            <button onclick="openModal('register-modal')" style="background:none; border:none; color:var(--accent); cursor:pointer; margin-top:10px;">Nincs fiókom? Regisztráció</button>
-            <br>
-            <button onclick="closeModals()" style="background:none; border:none; color:var(--text); cursor:pointer; margin-top:10px;">Mégse</button>
-        </div>
-    </div>
-
-    <div id="register-modal" class="modal-overlay">
-        <div class="modal">
-            <h2 style="color: var(--accent);">Regisztráció</h2>
-            <input type="text" id="r-name" placeholder="Teljes Név (Min. 2 szó)">
-            <input type="email" id="r-email" placeholder="E-mail (@creascola.hu)">
-            <input type="password" id="r-pass" placeholder="Jelszó (Min. 8 karakter, betű és szám)">
-            <input type="password" id="r-pass2" placeholder="Jelszó mégegyszer">
-            <button onclick="handleRegister()" style="width:100%; background:var(--accent); color:#000; margin-top:10px;">REGISZTRÁCIÓ</button>
-            <button onclick="closeModals()" style="background:none; border:none; color:var(--text); cursor:pointer; margin-top:10px;">Mégse</button>
-        </div>
-    </div>
-
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, doc, onSnapshot, updateDoc, getDoc, collection, addDoc, query, orderBy, limit, serverTimestamp, getDocs, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, createUserWithEmailAndPassword, sendEmailVerification } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyCTBGoX-vztuuxOzLz7gkFA4bqiMvKuEwI",
-            authDomain: "hetesek-6.firebaseapp.com",
-            projectId: "hetesek-6",
-            storageBucket: "hetesek-6.firebasestorage.app",
-            messagingSenderId: "429344638911",
-            appId: "1:429344638911:web:a4dc1bedc94caad6d1830a"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
-        const docRef = doc(db, "osztaly", "beallitas");
-
-        // --- JAVÍTOTT MENTÉSI LOGIKA ---
-        function checkAnnouncement() {
-            try {
-                const isRead = localStorage.getItem('announcementRead');
-                if (isRead !== 'true') {
-                    document.getElementById('update-modal').style.display = 'flex';
-                }
-            } catch (e) {
-                // Ha a localStorage le van tiltva, mutassuk az ablakot
-                document.getElementById('update-modal').style.display = 'flex';
-            }
-        }
-
-        window.handleAnnouncementAck = () => {
-            try {
-                localStorage.setItem('announcementRead', 'true');
-            } catch (e) {
-                console.error("Nem sikerült menteni a localStorage-ba");
-            }
-            document.getElementById('update-modal').style.display = 'none';
-            openModal('register-modal');
-        };
-        // ------------------------------
-
-        async function saveLog(text) {
-            const ua = navigator.userAgent;
-            let b = ua.includes("Chrome") ? "Chrome" : ua.includes("Firefox") ? "Firefox" : ua.includes("Safari") ? "Safari" : "Ismeretlen";
-            let os = ua.includes("Win") ? "Windows" : ua.includes("Mac") ? "macOS" : ua.includes("Android") ? "Android" : ua.includes("iPhone") ? "iOS" : "Ismeretlen";
-
-            try {
-                await addDoc(collection(db, "naplo"), {
-                    esemeny: text,
-                    idopont: serverTimestamp(),
-                    datum: new Date().toLocaleDateString('hu-HU'),
-                    felhasznalo: auth.currentUser ? auth.currentUser.email : "Rendszer",
-                    os: os, browser: b, res: `${window.screen.width}x${window.screen.height}`
-                });
-            } catch (e) { console.error(e); }
-        }
-
-        async function loadUsers() {
-            const querySnapshot = await getDocs(collection(db, "felhasznolok"));
-            const tbody = document.getElementById('user-list-body');
-            tbody.innerHTML = "";
-            querySnapshot.forEach((userDoc) => {
-                const userData = userDoc.data();
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${userData.email || 'N/A'}</td>
-                    <td><b style="color:var(--accent)">${userData.rang}</b></td>
-                    <td>
-                        <button onclick="updateUserRank('${userDoc.id}', 'admin')">Admin</button>
-                        <button onclick="updateUserRank('${userDoc.id}', 'user')">User</button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        window.updateUserRank = async (uid, newRank) => {
-            try {
-                await updateDoc(doc(db, "felhasznolok", uid), { rang: newRank });
-                notify("Rang frissítve: " + newRank);
-                loadUsers();
-                saveLog(`Rang módosítás: ${uid} -> ${newRank}`);
-            } catch (e) { notify("Hiba!", "var(--error)"); }
-        };
-
-        onSnapshot(query(collection(db, "naplo"), orderBy("idopont", "desc"), limit(15)), (snap) => {
-            const list = document.getElementById('log-list');
-            if(!list) return;
-            list.innerHTML = "";
-            snap.forEach(doc => {
-                const d = doc.data();
-                const t = d.idopont ? d.idopont.toDate().toLocaleTimeString('hu-HU') : "..";
-                const li = document.createElement('li');
-                li.className = 'log-item';
-                li.innerHTML = `<span class="log-time">${d.datum} ${t}</span><strong>${d.esemeny}</strong><br><small>${d.felhasznalo}</small>`;
-                
-                li.onmouseenter = () => {
-                    const popup = document.getElementById('details-popup');
-                    document.getElementById('popup-content').innerHTML = `💻 <b>OS:</b> ${d.os}<br>🌍 <b>Böngésző:</b> ${d.browser}<br>🖥️ <b>Res:</b> ${d.res}<br>👤 <b>User:</b> ${d.felhasznalo}`;
-                    popup.style.display = 'block';
-                };
-                li.onmouseleave = () => document.getElementById('details-popup').style.display = 'none';
-                list.appendChild(li);
-            });
-        });
-
-        onAuthStateChanged(auth, async (user) => {
-            const logSec = document.getElementById('logs-section');
-            const superSec = document.getElementById('superadmin-section');
-            if (user) {
-                document.getElementById('auth-trigger').style.display = 'none';
-                document.getElementById('logout-btn').style.display = 'block';
-                
-                const isLight = document.documentElement.getAttribute('data-theme') === 'light';
-                document.body.style.backgroundImage = isLight ? "url('index.light.png')" : "url('index.dark.png')";
-
-                const u = await getDoc(doc(db, "felhasznolok", user.uid));
-                if (u.exists()) {
-                    const rang = u.data().rang;
-                    if (rang === "admin" || rang === "superadmin") {
-                        document.getElementById('admin-controls').style.display = 'flex';
-                        logSec.style.display = 'block';
-                    } else {
-                        logSec.style.display = 'none';
-                    }
-                    if (rang === "superadmin") {
-                        superSec.style.display = 'block';
-                        loadUsers();
-                    }
-                }
-            } else {
-                document.getElementById('auth-trigger').style.display = 'block';
-                document.getElementById('logout-btn').style.display = 'none';
-                document.getElementById('admin-controls').style.display = 'none';
-                logSec.style.display = 'none';
-                superSec.style.display = 'none';
-                document.body.style.backgroundImage = "";
-            }
-        });
-
-        window.handleLogin = async () => {
-            try { 
-                const userCred = await signInWithEmailAndPassword(auth, document.getElementById('l-email').value, document.getElementById('l-pass').value); 
-                if (!userCred.user.emailVerified) {
-                    notify("Kérjük, előbb erősítsd meg az e-mail címedet!", "var(--error)");
-                    await signOut(auth);
-                    return;
-                }
-                await saveLog("Sikeres belépés");
-                closeModals(); 
-            } catch (e) { notify("Hiba!", "var(--error)"); }
-        };
-
-        window.handleRegister = async () => {
-            const name = document.getElementById('r-name').value.trim();
-            const email = document.getElementById('r-email').value.trim();
-            const pass = document.getElementById('r-pass').value;
-            const pass2 = document.getElementById('r-pass2').value;
-
-            if (name.split(' ').length < 2) return notify("Teljes név szükséges (min. 2 szó)!", "var(--error)");
-            if (!email.endsWith("@creascola.hu")) return notify("Csak @creascola.hu cím engedélyezett!", "var(--error)");
-            if (!/^(?=.*[A-Za-z])(?=.*\d).{8,}$/.test(pass)) return notify("Jelszó: min. 8 karakter, betű és szám!", "var(--error)");
-            if (pass !== pass2) return notify("A jelszavak nem egyeznek!", "var(--error)");
-
-            try {
-                const cred = await createUserWithEmailAndPassword(auth, email, pass);
-                
-                // --- E-MAIL MEGERŐSÍTÉS KÜLDÉSE ---
-                await sendEmailVerification(cred.user);
-                
-                await setDoc(doc(db, "felhasznolok", cred.user.uid), {
-                    email: email,
-                    nev: name,
-                    rang: "user"
-                });
-                
-                await saveLog("Új regisztráció (megerősítés kiküldve): " + email);
-                notify("Sikeres regisztráció! Ellenőrizd az e-mailedet a megerősítéshez.");
-                
-                // Kijelentkeztetés a megerősítésig
-                await signOut(auth);
-                closeModals();
-            } catch (e) { notify("Hiba: " + e.message, "var(--error)"); }
-        };
-
-        window.handleLogout = async () => { await saveLog("Kilépés"); signOut(auth); };
-        window.step = async (v) => { 
-            const s = await getDoc(docRef); 
-            await updateDoc(docRef, { offset: (s.data().offset || 0) + v }); 
-            await saveLog(`Léptetés (${v > 0 ? '+1' : '-1'})`);
-        };
-        window.togglePause = async () => { 
-            const s = await getDoc(docRef); 
-            const n = !s.data().isPaused;
-            await updateDoc(docRef, { isPaused: n }); 
-            await saveLog(n ? "Szünet AKTIVÁLVA" : "Szünet KIKAPCSOLVA");
-        };
-
-
-        const dict = {
-            hu: { title: "Osztály Hetesei", eheti: "Eheti hetesek", jovo: "Jövő heti:", feladat: "Feladatok", tasks: ["<b>Takarítás</b> nap végén 🧹", "<b>Tábla törlése </b> szünetkben 🧼", "<b>Ablakok bezárása </b> nap végén 🪟", "<b>Székek felrakása </b> nap végén 🪑", "<b>Hiányzók</b> számon tartása 📝", "<b>Tanár értesítése</b> 5 perc után 🔔"] },
-            en: { title: "Class Monitors", eheti: "Current", jovo: "Next week:", feladat: "Tasks", tasks: ["Cleaning 🧹", "Board 🧼", "Windows 🪟", "Chairs 🪑", "Absentees 📝", "Teacher 🔔"] }
-        };
-
-
-        window.changeLang = () => {
-            const l = document.getElementById('lang-select').value;
-            document.getElementById('main-title').innerText = dict[l].title;
-            document.getElementById('h-eheti').innerText = dict[l].eheti;
-            document.getElementById('h-jovo').innerText = dict[l].jovo;
-            document.getElementById('h-feladat').innerText = dict[l].feladat;
-            document.getElementById('task-list').innerHTML = dict[l].tasks.map(t => `<li><b>${t}</b></li>`).join('');
-            document.getElementById('current-date').innerText = new Date().toLocaleDateString(l==='hu'?'hu-HU':'en-US', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
-        };
-
-        onSnapshot(docRef, (snap) => {
-            if (snap.exists()) {
-                const data = snap.data();
-                const d = new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate() + 4 - (d.getDay()||7));
-                const week = Math.ceil((((d - new Date(d.getFullYear(),0,1)) / 86400000) + 1)/7);
-                const offset = data.offset || 0;
-                const cIdx = ((week + offset - 1) % data.nevsor.length + data.nevsor.length) % data.nevsor.length;
-                document.getElementById('names-area').innerHTML = `<div class="name-box">${data.nevsor[cIdx].a}</div><div class="name-box">${data.nevsor[cIdx].b}</div>`;
-                const nIdx = ((week + 1 + offset - 1) % data.nevsor.length + data.nevsor.length) % data.nevsor.length;
-                document.getElementById('next-names').innerText = `${data.nevsor[nIdx].a} és ${data.nevsor[nIdx].b}`;
-                document.getElementById('pause-btn').innerText = data.isPaused ? "▶ FOLYTATÁS" : "⏸ SZÜNET";
-            }
-        });
-
-        window.toggleTheme = () => {
-            const newTheme = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
-            document.documentElement.setAttribute('data-theme', newTheme);
-            if(auth.currentUser) {
-                document.body.style.backgroundImage = newTheme === 'light' ? "url('background/index.light.png')" : "url('background/index.dark.png')";
-            }
-        };
-        window.openModal = (id) => { closeModals(); document.getElementById(id).style.display = 'flex'; };
-        window.closeModals = () => document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none');
-        function notify(msg, color = "var(--accent)") {
-            const t = document.getElementById('toast');
-            if(t) {
-                t.innerText = msg; t.style.borderColor = color; t.style.display = 'block';
-                setTimeout(() => t.style.display = 'none', 3000);
-            }
-        }
-        changeLang();
-        
-        // INDÍTÁS
-        checkAnnouncement();
-    </script>
+let glitchNames = ['B4l4zs H4ck3r', '4DM1N_0WN3D', 'R00T_4CC3SS', 'SYS_0WN3D'];
+let ni = 0;
+setInterval(() => {
+  ni = (ni+1) % glitchNames.length;
+  document.getElementById('hacker-name').textContent = glitchNames[ni];
+}, 2000);
+</script>
 </body>
 </html>
