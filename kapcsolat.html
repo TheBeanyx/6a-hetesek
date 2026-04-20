@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kapcsolat és Ügyintézés - 6.A</title>
+    <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #050a14; 
+            --bg-gradient: radial-gradient(circle at center, #111827 0%, #050a14 100%);
+            --card: #111827;
+            --accent: #00f6ff; 
+            --error: #ff4444; 
+            --text: #e2e8f0;
+            --input-bg: #070c16; 
+            --input-border: #333;
+        }
+
+        body {
+            margin: 0; font-family: 'Lora', sans-serif; 
+            background: var(--bg-gradient);
+            background-attachment: fixed;
+            color: var(--text); display: flex; flex-direction: column; align-items: center;
+            min-height: 100vh; padding: 20px;
+        }
+
+        h1 { color: var(--accent); text-transform: uppercase; letter-spacing: 4px; text-shadow: 0 0 15px rgba(0,246,255,0.4); text-align: center; margin-top: 30px; }
+
+        .container {
+            background: var(--card); border: 1px solid var(--accent); border-radius: 25px;
+            padding: 30px; width: 100%; max-width: 500px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        label { display: block; margin-top: 15px; font-weight: bold; color: var(--accent); font-size: 0.9rem; }
+
+        input, select, textarea {
+            width: 100%; padding: 12px; margin-top: 8px; 
+            background: var(--input-bg); border: 1px solid var(--input-border); 
+            color: var(--text); border-radius: 10px; box-sizing: border-box;
+            font-family: inherit; transition: 0.3s;
+        }
+
+        input:focus, textarea:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 10px rgba(0,246,255,0.2); }
+
+        textarea { height: 120px; resize: none; }
+
+        button {
+            width: 100%; background: var(--card); border: 1px solid var(--accent); 
+            color: var(--accent); padding: 15px; border-radius: 10px; 
+            cursor: pointer; font-weight: bold; margin-top: 25px; transition: 0.3s;
+            text-transform: uppercase; letter-spacing: 2px;
+        }
+
+        button:hover:not(:disabled) { background: var(--accent); color: #000; box-shadow: 0 0 20px rgba(0,246,255,0.4); }
+        button:disabled { opacity: 0.5; cursor: not-allowed; border-color: #555; color: #555; }
+
+        #status-msg { 
+            margin-top: 20px; padding: 15px; border-radius: 10px; 
+            text-align: center; font-weight: bold; display: none; 
+        }
+
+        .back-link { margin-top: 30px; color: var(--text); text-decoration: none; opacity: 0.6; transition: 0.3s; }
+        .back-link:hover { opacity: 1; color: var(--accent); }
+    </style>
+</head>
+<body>
+
+    <h1>Ügyfélkapu</h1>
+
+    <div class="container">
+        <h3 style="margin-top:0; text-align: center;">Új ügy bejelentése</h3>
+        
+        <form id="complaint-form">
+            <label>Tárgy</label>
+            <input type="text" id="subject" placeholder="Mi az ügy lényege?" required>
+
+            <label>Láthatóság</label>
+            <select id="visibility">
+                <option value="public">Publikus (Mindenki látja)</option>
+                <option value="private">Privát (Csak Adminok látják)</option>
+            </select>
+
+            <label>Részletes leírás</label>
+            <textarea id="message" placeholder="Írd le a részleteket..." required></textarea>
+
+            <button type="submit" id="submit-btn">Küldés a rendszerbe</button>
+        </form>
+
+        <div id="status-msg"></div>
+    </div>
+
+    <a href="hetesek.html" class="back-link">❮ Vissza a főoldalra</a>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        // Konfiguráció a hetesek.html-ből
+        const firebaseConfig = {
+            apiKey: "AIzaSyCTBGoX-vztuuxOzLz7gkFA4bqiMvKuEwI",
+            authDomain: "hetesek-6.firebaseapp.com",
+            projectId: "hetesek-6",
+            storageBucket: "hetesek-6.firebasestorage.app",
+            messagingSenderId: "429344638911",
+            appId: "1:429344638911:web:a4dc1bedc94caad6d1830a"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        const form = document.getElementById('complaint-form');
+        const btn = document.getElementById('submit-btn');
+        const statusMsg = document.getElementById('status-msg');
+        let userEmail = null;
+
+        // Felhasználó ellenőrzése
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                userEmail = user.email;
+            } else {
+                statusMsg.style.display = "block";
+                statusMsg.style.background = "rgba(255, 68, 68, 0.1)";
+                statusMsg.style.color = "var(--error)";
+                statusMsg.innerText = "Hiba: Csak bejelentkezett felhasználók nyithatnak ügyet!";
+                btn.disabled = true;
+            }
+        });
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            if (!userEmail) return;
+
+            btn.disabled = true;
+            btn.innerText = "FELDOLGOZÁS...";
+            statusMsg.style.display = "none";
+
+            try {
+                // Panasz mentése
+                await addDoc(collection(db, "panaszok"), {
+                    targy: document.getElementById('subject').value,
+                    szoveg: document.getElementById('message').value,
+                    tipus: document.getElementById('visibility').value,
+                    bekuldo: userEmail,
+                    statusz: "nyitott",
+                    idopont: serverTimestamp(),
+                    datum: new Date().toLocaleDateString('hu-HU')
+                });
+
+                // Naplózás
+                await addDoc(collection(db, "naplo"), {
+                    esemeny: "Új panasz beküldve: " + document.getElementById('subject').value,
+                    felhasznalo: userEmail,
+                    idopont: serverTimestamp(),
+                    datum: new Date().toLocaleDateString('hu-HU'),
+                    os: navigator.platform,
+                    browser: "Web-App"
+                });
+
+                statusMsg.style.display = "block";
+                statusMsg.style.background = "rgba(0, 246, 255, 0.1)";
+                statusMsg.style.color = "var(--accent)";
+                statusMsg.innerText = "Sikeres beküldés! Az adminok látni fogják az ügyet.";
+                form.reset();
+
+            } catch (error) {
+                console.error("Hiba történt:", error);
+                statusMsg.style.display = "block";
+                statusMsg.style.background = "rgba(255, 68, 68, 0.1)";
+                statusMsg.style.color = "var(--error)";
+                statusMsg.innerText = "Hiba történt: " + error.message;
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "KÜLDÉS A RENDSZERBE";
+            }
+        });
+    </script>
+</body>
+</html>
