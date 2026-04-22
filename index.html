@@ -156,7 +156,7 @@
     <div id="update-modal" class="modal-overlay">
         <div class="modal urgent-modal">
             <h2 style="color: var(--error);">⚠️ KÖZLEMÉNY</h2>
-            <p style="font-weight: bold;">Frissítettük biztonsági szabályainkat, így kérünk minden felhasználót, hogy regisztráljon ismét.</p>
+            <p style="font-weight: bold;">Jelenleg a weboldal frisstés alatt áll: A Jelenlegi hetesek: Árpási Panna És Bertók Márton</p>
             <button onclick="location.href='uj.szabaly.html'" style="width:100%; background:var(--error); color:white; border:none; padding:15px; font-size:1.1rem; cursor:pointer; border-radius:10px; margin-bottom: 10px;">Tovább olvasok</button>
             <button onclick="handleAnnouncementAck()" style="width:100%; background:var(--error); color:white; border:none; padding:15px; font-size:1.1rem; cursor:pointer; border-radius:10px;">REGISZTRÁCIÓ</button>
         </div>
@@ -191,19 +191,7 @@
         import { getFirestore, doc, onSnapshot, updateDoc, getDoc, collection, addDoc, query, orderBy, limit, serverTimestamp, getDocs, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, createUserWithEmailAndPassword, sendEmailVerification } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyCTBGoX-vztuuxOzLz7gkFA4bqiMvKuEwI",
-            authDomain: "hetesek-6.firebaseapp.com",
-            projectId: "hetesek-6",
-            storageBucket: "hetesek-6.firebasestorage.app",
-            messagingSenderId: "429344638911",
-            appId: "1:429344638911:web:a4dc1bedc94caad6d1830a"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
-        const docRef = doc(db, "osztaly", "beallitas");
+//Szia BAZSI! Üzenem neked, hogy jelenleg ez most nem működik
 
         // --- JAVÍTOTT MENTÉSI LOGIKA ---
         function checkAnnouncement() {
