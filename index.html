@@ -3,123 +3,440 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jelenlegi Hetesek</title>
+    <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;700&display=swap" rel="stylesheet">
+    <title>6.A Hetesek - Security Pro</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;600;800&display=swap');
+        :root {
+            --bg: #050a14; 
+            --bg-gradient: radial-gradient(circle at center, #111827 0%, #050a14 100%);
+            --card: #111827;
+            --accent: #00f6ff; --error: #ff4444; --text: #e2e8f0;
+            --input-bg: #070c16; --input-border: #333;
+        }
+        [data-theme="light"] {
+            --bg: #f0f2f5; 
+            --bg-gradient: radial-gradient(circle at center, #ffffff 0%, #e5e7eb 100%);
+            --card: #ffffff; --accent: #0070f3; --text: #1f2937; --input-bg: #f9fafb; --input-border: #d1d5db;
+        }
 
         body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Poppins', sans-serif;
-            background: radial-gradient(circle at center, #1e1e2f 0%, #121212 100%);
-            color: white;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            overflow: hidden;
+            margin: 0; font-family: 'Lora', sans-serif; 
+            background: var(--bg-gradient);
+            background-attachment: fixed;
+            background-size: cover;
+            background-position: center;
+            color: var(--text); display: flex; flex-direction: column; align-items: center;
+            min-height: 100vh; padding: 20px; transition: 0.3s;
         }
 
-        h1 {
-            font-size: 3rem;
-            font-weight: 800;
-            margin-bottom: 2rem;
-            text-transform: uppercase;
-            letter-spacing: 4px;
-            background: linear-gradient(to right, #00dbde, #fc00ff);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        h1 { color: var(--accent); text-transform: uppercase; letter-spacing: 4px; text-shadow: 0 0 15px rgba(0,246,255,0.4); text-align: center; margin-top: 50px; }
+
+        .display-container, .tasks-container, .next-week-container, .logs-display-container, .admin-panel {
+            background: var(--card); border: 1px solid var(--accent); border-radius: 25px;
+            padding: 30px; width: 100%; max-width: 450px; text-align: center; margin-bottom: 20px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5); animation: zoomFade 0.6s ease;
         }
 
-        .container {
-            display: flex;
-            gap: 2rem;
-            flex-wrap: wrap;
-            justify-content: center;
+        .name-box { font-size: 2.2rem; font-weight: 800; padding: 18px; margin: 12px 0; background: rgba(128,128,128,0.05); border-radius: 15px; border-left: 6px solid var(--accent); min-height: 2.5rem; }
+        .top-controls { position: fixed; top: 20px; right: 20px; display: flex; gap: 8px; z-index: 100; }
+        
+        button { background: var(--card); border: 1px solid var(--accent); color: var(--accent); padding: 8px 12px; border-radius: 10px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        button:hover { background: var(--accent); color: #000; }
+        
+        .task-list { list-style: none; padding: 0; text-align: left; }
+        .task-list li { margin: 10px 0; padding-left: 30px; position: relative; }
+        .task-list li::before { content: "⚡"; position: absolute; left: 0; color: var(--accent); }
+
+        .log-list { text-align: left; list-style: none; padding: 0; font-size: 0.85rem; max-height: 300px; overflow-y: auto; }
+        .log-item { padding: 12px; border-bottom: 1px solid rgba(128,128,128,0.2); cursor: pointer; transition: 0.2s; }
+        .log-item:hover { background: rgba(0, 246, 255, 0.1); }
+        .log-time { color: var(--accent); font-weight: bold; display: block; }
+
+        .user-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.8rem; }
+        .user-table th, .user-table td { padding: 8px; border-bottom: 1px solid rgba(128,128,128,0.2); text-align: left; }
+        .user-table button { padding: 4px 8px; font-size: 0.7rem; }
+
+        #details-popup {
+            display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: #0b1222; border: 2px solid var(--accent); padding: 20px; border-radius: 20px;
+            z-index: 9999; width: 280px; box-shadow: 0 0 50px rgba(0,0,0,0.9); text-align: center; pointer-events: none;
         }
 
-        .card {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 2rem 4rem;
-            border-radius: 20px;
-            text-align: center;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            cursor: default;
-            position: relative;
-            overflow: hidden;
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); z-index: 2000; align-items: center; justify-content: center; }
+        .modal { background: var(--card); border: 1px solid var(--accent); padding: 30px; border-radius: 25px; width: 350px; text-align: center; }
+        
+        .urgent-modal { 
+            border: 3px solid var(--error) !important; 
+            animation: pulseRed 2s infinite !important;
+            background: #1a0505 !important;
         }
 
-        .card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
-            transition: 0.5s;
+        @keyframes pulseRed {
+            0% { box-shadow: 0 0 0 0px rgba(255, 68, 68, 0.7); }
+            70% { box-shadow: 0 0 0 20px rgba(255, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0px rgba(255, 68, 68, 0); }
         }
 
-        .card:hover::before {
-            left: 100%;
-        }
+        input, select { width: 100%; padding: 12px; margin: 10px 0; background: var(--input-bg); border: 1px solid var(--input-border); color: var(--text); border-radius: 10px; box-sizing: border-box; }
+        #toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: var(--card); border: 1px solid var(--accent); padding: 12px 25px; border-radius: 50px; display: none; z-index: 3000; }
 
-        .card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
-            border-color: rgba(0, 219, 222, 0.5);
-        }
-
-        .role {
-            font-size: 0.9rem;
-            color: #00dbde;
-            font-weight: 600;
-            text-transform: uppercase;
-            margin-bottom: 0.5rem;
-            display: block;
-        }
-
-        .name {
-            font-size: 1.8rem;
-            font-weight: 600;
-            letter-spacing: 1px;
-        }
-
-        /* Animáció a megjelenéshez */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .card {
-            animation: fadeIn 0.8s ease forwards;
-        }
-
-        .card:nth-child(2) {
-            animation-delay: 0.2s;
-        }
-
+        @keyframes zoomFade { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
     </style>
 </head>
 <body>
 
-    <h1>Jelenlegi Hetesek</h1>
+    <div id="toast"></div>
 
-    <div class="container">
-        <div class="card">
-            <span class="role">2026. Április 20.</span>
-            <div class="name">Árpási Panna</div>
-        </div>
+    <div id="details-popup">
+        <h4 style="color:var(--accent); margin-top:0;">Eszköz információk</h4>
+        <div id="popup-content" style="font-size: 0.9rem; line-height: 1.6;"></div>
+    </div>
 
-        <div class="card">
-            <span class="role">2026. Április 26.</span>
-            <div class="name">Bertók Márton</div>
+    <div class="top-controls">
+        <select id="lang-select" onchange="changeLang()" style="width: auto; margin: 0; padding: 5px 10px;">
+            <option value="hu">HU</option>
+            <option value="en">EN</option>
+        </select>
+        <button onclick="toggleTheme()">🌓</button>
+        <button id="auth-trigger" onclick="openModal('login-modal')">🔑</button>
+        <button id="logout-btn" style="display:none; background:var(--error); color:white; border:none;" onclick="handleLogout()">🚪Kijelntkezés </button>
+    </div>
+
+    <h1 id="main-title">Osztály Hetesei</h1>
+    <div id="current-date" style="margin-bottom: 20px; opacity: 0.8;"></div>
+
+    <div class="display-container">
+        <h3 id="h-eheti">Eheti hetesek</h3>
+        <div id="names-area"><div class="name-box">-</div><div class="name-box">-</div></div>
+        <div id="admin-controls" style="display:none; gap:10px; justify-content:center; margin-top:15px;">
+            <button onclick="step(-1)">❮</button>
+            <button onclick="step(1)">❯</button>
+            <button id="pause-btn" onclick="togglePause()">⏸ SZÜNET</button>
         </div>
     </div>
 
+    <div class="next-week-container">
+        <h4 id="h-jovo" style="margin:0; opacity:0.7;">Jövő heti hetesek:</h4>
+        <div id="next-names" style="color:var(--accent); font-weight:bold; margin-top:10px; font-size: 1.2rem;">...</div>
+    </div>
+
+    <div class="tasks-container">
+        <h3 id="h-feladat">A hetes feladatai</h3>
+        <ul class="task-list" id="task-list"></ul>
+    </div>
+
+    <div id="superadmin-section" class="admin-panel" style="display: none;">
+        <h3 style="color: var(--accent);">Felhasználók Kezelése</h3>
+        <div style="overflow-x: auto;">
+            <table class="user-table">
+                <thead>
+                    <tr>
+                        <th>Email</th>
+                        <th>Rang</th>
+                        <th>Művelet</th>
+                    </tr>
+                </thead>
+                <tbody id="user-list-body"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="logs-section" class="logs-display-container" style="display: none;">
+        <h3 style="margin-top:0;">Biztonsági Napló (Naplo)</h3>
+        <p style="font-size: 0.7rem; opacity: 0.6;">(Vidd az egeret a sor fölé a részletekért)</p>
+        <ul id="log-list" class="log-list" style="margin-bottom: 20px;"></ul>
+        <button onclick="window.location.href='logs.html'" style="width: 100%; border-style: dashed; opacity: 0.8;">
+            📑 Összes naplóbejegyzés megnyitása
+        </button>
+    </div>
+
+    <div id="update-modal" class="modal-overlay">
+        <div class="modal urgent-modal">
+            <h2 style="color: var(--error);">⚠️ KÖZLEMÉNY</h2>
+            <p style="font-weight: bold;">Frissítettük biztonsági szabályainkat, így kérünk minden felhasználót, hogy regisztráljon ismét.</p>
+            <button onclick="location.href='uj.szabaly.html'" style="width:100%; background:var(--error); color:white; border:none; padding:15px; font-size:1.1rem; cursor:pointer; border-radius:10px; margin-bottom: 10px;">Tovább olvasok</button>
+            <button onclick="handleAnnouncementAck()" style="width:100%; background:var(--error); color:white; border:none; padding:15px; font-size:1.1rem; cursor:pointer; border-radius:10px;">REGISZTRÁCIÓ</button>
+        </div>
+    </div>
+
+    <div id="login-modal" class="modal-overlay">
+        <div class="modal">
+            <h2 id="m-login-title">Belépés</h2>
+            <input type="email" id="l-email" placeholder="E-mail (@creascola.hu)">
+            <input type="password" id="l-pass" placeholder="Jelszó">
+            <button onclick="handleLogin()" style="width:100%; background:var(--accent); color:#000;">OK</button>
+            <button onclick="openModal('register-modal')" style="background:none; border:none; color:var(--accent); cursor:pointer; margin-top:10px;">Nincs fiókom? Regisztráció</button>
+            <br>
+            <button onclick="closeModals()" style="background:none; border:none; color:var(--text); cursor:pointer; margin-top:10px;">Mégse</button>
+        </div>
+    </div>
+
+    <div id="register-modal" class="modal-overlay">
+        <div class="modal">
+            <h2 style="color: var(--accent);">Regisztráció</h2>
+            <input type="text" id="r-name" placeholder="Teljes Név (Min. 2 szó)">
+            <input type="email" id="r-email" placeholder="E-mail (@creascola.hu)">
+            <input type="password" id="r-pass" placeholder="Jelszó (Min. 8 karakter, betű és szám)">
+            <input type="password" id="r-pass2" placeholder="Jelszó mégegyszer">
+            <button onclick="handleRegister()" style="width:100%; background:var(--accent); color:#000; margin-top:10px;">REGISZTRÁCIÓ</button>
+            <button onclick="closeModals()" style="background:none; border:none; color:var(--text); cursor:pointer; margin-top:10px;">Mégse</button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, doc, onSnapshot, updateDoc, getDoc, collection, addDoc, query, orderBy, limit, serverTimestamp, getDocs, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, createUserWithEmailAndPassword, sendEmailVerification } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCTBGoX-vztuuxOzLz7gkFA4bqiMvKuEwI",
+            authDomain: "hetesek-6.firebaseapp.com",
+            projectId: "hetesek-6",
+            storageBucket: "hetesek-6.firebasestorage.app",
+            messagingSenderId: "429344638911",
+            appId: "1:429344638911:web:a4dc1bedc94caad6d1830a"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        const docRef = doc(db, "osztaly", "beallitas");
+
+        // --- JAVÍTOTT MENTÉSI LOGIKA ---
+        function checkAnnouncement() {
+            try {
+                const isRead = localStorage.getItem('announcementRead');
+                if (isRead !== 'true') {
+                    document.getElementById('update-modal').style.display = 'flex';
+                }
+            } catch (e) {
+                // Ha a localStorage le van tiltva, mutassuk az ablakot
+                document.getElementById('update-modal').style.display = 'flex';
+            }
+        }
+
+        window.handleAnnouncementAck = () => {
+            try {
+                localStorage.setItem('announcementRead', 'true');
+            } catch (e) {
+                console.error("Nem sikerült menteni a localStorage-ba");
+            }
+            document.getElementById('update-modal').style.display = 'none';
+            openModal('register-modal');
+        };
+        // ------------------------------
+
+        async function saveLog(text) {
+            const ua = navigator.userAgent;
+            let b = ua.includes("Chrome") ? "Chrome" : ua.includes("Firefox") ? "Firefox" : ua.includes("Safari") ? "Safari" : "Ismeretlen";
+            let os = ua.includes("Win") ? "Windows" : ua.includes("Mac") ? "macOS" : ua.includes("Android") ? "Android" : ua.includes("iPhone") ? "iOS" : "Ismeretlen";
+
+            try {
+                await addDoc(collection(db, "naplo"), {
+                    esemeny: text,
+                    idopont: serverTimestamp(),
+                    datum: new Date().toLocaleDateString('hu-HU'),
+                    felhasznalo: auth.currentUser ? auth.currentUser.email : "Rendszer",
+                    os: os, browser: b, res: `${window.screen.width}x${window.screen.height}`
+                });
+            } catch (e) { console.error(e); }
+        }
+
+        async function loadUsers() {
+            const querySnapshot = await getDocs(collection(db, "felhasznolok"));
+            const tbody = document.getElementById('user-list-body');
+            tbody.innerHTML = "";
+            querySnapshot.forEach((userDoc) => {
+                const userData = userDoc.data();
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${userData.email || 'N/A'}</td>
+                    <td><b style="color:var(--accent)">${userData.rang}</b></td>
+                    <td>
+                        <button onclick="updateUserRank('${userDoc.id}', 'admin')">Admin</button>
+                        <button onclick="updateUserRank('${userDoc.id}', 'user')">User</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        window.updateUserRank = async (uid, newRank) => {
+            try {
+                await updateDoc(doc(db, "felhasznolok", uid), { rang: newRank });
+                notify("Rang frissítve: " + newRank);
+                loadUsers();
+                saveLog(`Rang módosítás: ${uid} -> ${newRank}`);
+            } catch (e) { notify("Hiba!", "var(--error)"); }
+        };
+
+        onSnapshot(query(collection(db, "naplo"), orderBy("idopont", "desc"), limit(15)), (snap) => {
+            const list = document.getElementById('log-list');
+            if(!list) return;
+            list.innerHTML = "";
+            snap.forEach(doc => {
+                const d = doc.data();
+                const t = d.idopont ? d.idopont.toDate().toLocaleTimeString('hu-HU') : "..";
+                const li = document.createElement('li');
+                li.className = 'log-item';
+                li.innerHTML = `<span class="log-time">${d.datum} ${t}</span><strong>${d.esemeny}</strong><br><small>${d.felhasznalo}</small>`;
+                
+                li.onmouseenter = () => {
+                    const popup = document.getElementById('details-popup');
+                    document.getElementById('popup-content').innerHTML = `💻 <b>OS:</b> ${d.os}<br>🌍 <b>Böngésző:</b> ${d.browser}<br>🖥️ <b>Res:</b> ${d.res}<br>👤 <b>User:</b> ${d.felhasznalo}`;
+                    popup.style.display = 'block';
+                };
+                li.onmouseleave = () => document.getElementById('details-popup').style.display = 'none';
+                list.appendChild(li);
+            });
+        });
+
+        onAuthStateChanged(auth, async (user) => {
+            const logSec = document.getElementById('logs-section');
+            const superSec = document.getElementById('superadmin-section');
+            if (user) {
+                document.getElementById('auth-trigger').style.display = 'none';
+                document.getElementById('logout-btn').style.display = 'block';
+                
+                const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+                document.body.style.backgroundImage = isLight ? "url('index.light.png')" : "url('index.dark.png')";
+
+                const u = await getDoc(doc(db, "felhasznolok", user.uid));
+                if (u.exists()) {
+                    const rang = u.data().rang;
+                    if (rang === "admin" || rang === "superadmin") {
+                        document.getElementById('admin-controls').style.display = 'flex';
+                        logSec.style.display = 'block';
+                    } else {
+                        logSec.style.display = 'none';
+                    }
+                    if (rang === "superadmin") {
+                        superSec.style.display = 'block';
+                        loadUsers();
+                    }
+                }
+            } else {
+                document.getElementById('auth-trigger').style.display = 'block';
+                document.getElementById('logout-btn').style.display = 'none';
+                document.getElementById('admin-controls').style.display = 'none';
+                logSec.style.display = 'none';
+                superSec.style.display = 'none';
+                document.body.style.backgroundImage = "";
+            }
+        });
+
+        window.handleLogin = async () => {
+            try { 
+                const userCred = await signInWithEmailAndPassword(auth, document.getElementById('l-email').value, document.getElementById('l-pass').value); 
+                if (!userCred.user.emailVerified) {
+                    notify("Kérjük, előbb erősítsd meg az e-mail címedet!", "var(--error)");
+                    await signOut(auth);
+                    return;
+                }
+                await saveLog("Sikeres belépés");
+                closeModals(); 
+            } catch (e) { notify("Hiba!", "var(--error)"); }
+        };
+
+        window.handleRegister = async () => {
+            const name = document.getElementById('r-name').value.trim();
+            const email = document.getElementById('r-email').value.trim();
+            const pass = document.getElementById('r-pass').value;
+            const pass2 = document.getElementById('r-pass2').value;
+
+            if (name.split(' ').length < 2) return notify("Teljes név szükséges (min. 2 szó)!", "var(--error)");
+            if (!email.endsWith("@creascola.hu")) return notify("Csak @creascola.hu cím engedélyezett!", "var(--error)");
+            if (!/^(?=.*[A-Za-z])(?=.*\d).{8,}$/.test(pass)) return notify("Jelszó: min. 8 karakter, betű és szám!", "var(--error)");
+            if (pass !== pass2) return notify("A jelszavak nem egyeznek!", "var(--error)");
+
+            try {
+                const cred = await createUserWithEmailAndPassword(auth, email, pass);
+                
+                // --- E-MAIL MEGERŐSÍTÉS KÜLDÉSE ---
+                await sendEmailVerification(cred.user);
+                
+                await setDoc(doc(db, "felhasznolok", cred.user.uid), {
+                    email: email,
+                    nev: name,
+                    rang: "user"
+                });
+                
+                await saveLog("Új regisztráció (megerősítés kiküldve): " + email);
+                notify("Sikeres regisztráció! Ellenőrizd az e-mailedet a megerősítéshez.");
+                
+                // Kijelentkeztetés a megerősítésig
+                await signOut(auth);
+                closeModals();
+            } catch (e) { notify("Hiba: " + e.message, "var(--error)"); }
+        };
+
+        window.handleLogout = async () => { await saveLog("Kilépés"); signOut(auth); };
+        window.step = async (v) => { 
+            const s = await getDoc(docRef); 
+            await updateDoc(docRef, { offset: (s.data().offset || 0) + v }); 
+            await saveLog(`Léptetés (${v > 0 ? '+1' : '-1'})`);
+        };
+        window.togglePause = async () => { 
+            const s = await getDoc(docRef); 
+            const n = !s.data().isPaused;
+            await updateDoc(docRef, { isPaused: n }); 
+            await saveLog(n ? "Szünet AKTIVÁLVA" : "Szünet KIKAPCSOLVA");
+        };
+
+
+        const dict = {
+            hu: { title: "Osztály Hetesei", eheti: "Eheti hetesek", jovo: "Jövő heti:", feladat: "Feladatok", tasks: ["<b>Takarítás</b> nap végén 🧹", "<b>Tábla törlése </b> szünetkben 🧼", "<b>Ablakok bezárása </b> nap végén 🪟", "<b>Székek felrakása </b> nap végén 🪑", "<b>Hiányzók</b> számon tartása 📝", "<b>Tanár értesítése</b> 5 perc után 🔔"] },
+            en: { title: "Class Monitors", eheti: "Current", jovo: "Next week:", feladat: "Tasks", tasks: ["Cleaning 🧹", "Board 🧼", "Windows 🪟", "Chairs 🪑", "Absentees 📝", "Teacher 🔔"] }
+        };
+
+
+        window.changeLang = () => {
+            const l = document.getElementById('lang-select').value;
+            document.getElementById('main-title').innerText = dict[l].title;
+            document.getElementById('h-eheti').innerText = dict[l].eheti;
+            document.getElementById('h-jovo').innerText = dict[l].jovo;
+            document.getElementById('h-feladat').innerText = dict[l].feladat;
+            document.getElementById('task-list').innerHTML = dict[l].tasks.map(t => `<li><b>${t}</b></li>`).join('');
+            document.getElementById('current-date').innerText = new Date().toLocaleDateString(l==='hu'?'hu-HU':'en-US', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
+        };
+
+        onSnapshot(docRef, (snap) => {
+            if (snap.exists()) {
+                const data = snap.data();
+                const d = new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate() + 4 - (d.getDay()||7));
+                const week = Math.ceil((((d - new Date(d.getFullYear(),0,1)) / 86400000) + 1)/7);
+                const offset = data.offset || 0;
+                const cIdx = ((week + offset - 1) % data.nevsor.length + data.nevsor.length) % data.nevsor.length;
+                document.getElementById('names-area').innerHTML = `<div class="name-box">${data.nevsor[cIdx].a}</div><div class="name-box">${data.nevsor[cIdx].b}</div>`;
+                const nIdx = ((week + 1 + offset - 1) % data.nevsor.length + data.nevsor.length) % data.nevsor.length;
+                document.getElementById('next-names').innerText = `${data.nevsor[nIdx].a} és ${data.nevsor[nIdx].b}`;
+                document.getElementById('pause-btn').innerText = data.isPaused ? "▶ FOLYTATÁS" : "⏸ SZÜNET";
+            }
+        });
+
+        window.toggleTheme = () => {
+            const newTheme = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            if(auth.currentUser) {
+                document.body.style.backgroundImage = newTheme === 'light' ? "url('background/index.light.png')" : "url('background/index.dark.png')";
+            }
+        };
+        window.openModal = (id) => { closeModals(); document.getElementById(id).style.display = 'flex'; };
+        window.closeModals = () => document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none');
+        function notify(msg, color = "var(--accent)") {
+            const t = document.getElementById('toast');
+            if(t) {
+                t.innerText = msg; t.style.borderColor = color; t.style.display = 'block';
+                setTimeout(() => t.style.display = 'none', 3000);
+            }
+        }
+        changeLang();
+        
+        // INDÍTÁS
+        checkAnnouncement();
+    </script>
 </body>
 </html>
