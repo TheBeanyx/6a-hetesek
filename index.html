@@ -84,6 +84,14 @@
         #toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: var(--card); border: 1px solid var(--accent); padding: 12px 25px; border-radius: 50px; display: none; z-index: 3000; }
 
         @keyframes zoomFade { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+
+        /* ÚJ STÍLUSOK AZ ESEMÉNYEKHEZ */
+        #event-toast {
+            position: fixed; bottom: 20px; right: 20px; background: var(--card); border: 2px solid var(--accent);
+            padding: 15px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 4000;
+            cursor: pointer; display: none; animation: slideIn 0.5s ease-out; max-width: 300px;
+        }
+        @keyframes slideIn { from { transform: translateX(120%); } to { transform: translateX(0); } }
     </style>
 </head>
 <body>
@@ -153,6 +161,19 @@
         </button>
     </div>
 
+    <div id="event-toast" onclick="showEventDetails()">
+        <small style="color: var(--accent); display: block;">Mai nap:</small>
+        <div id="event-toast-text"></div>
+    </div>
+
+    <div id="event-detail-modal" class="modal-overlay">
+        <div class="modal">
+            <h2 style="color: var(--accent);">Mai események</h2>
+            <div id="event-full-list" style="margin: 20px 0; text-align: left; max-height: 200px; overflow-y: auto;"></div>
+            <button onclick="closeEventModal()" style="width:100%; background:var(--accent); color:#000;">Bezárás</button>
+        </div>
+    </div>
+
     <div id="update-modal" class="modal-overlay">
         <div class="modal urgent-modal">
             <h2 style="color: var(--error);">⚠️ KÖZLEMÉNY</h2>
@@ -186,6 +207,8 @@
         </div>
     </div>
 
+    <script src="esemenyek.listaja.js"></script>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, doc, onSnapshot, updateDoc, getDoc, collection, addDoc, query, orderBy, limit, serverTimestamp, getDocs, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
@@ -213,7 +236,6 @@
                     document.getElementById('update-modal').style.display = 'flex';
                 }
             } catch (e) {
-                // Ha a localStorage le van tiltva, mutassuk az ablakot
                 document.getElementById('update-modal').style.display = 'flex';
             }
         }
@@ -227,7 +249,6 @@
             document.getElementById('update-modal').style.display = 'none';
             openModal('register-modal');
         };
-        // ------------------------------
 
         async function saveLog(text) {
             const ua = navigator.userAgent;
@@ -243,25 +264,6 @@
                     os: os, browser: b, res: `${window.screen.width}x${window.screen.height}`
                 });
             } catch (e) { console.error(e); }
-        }
-
-        async function loadUsers() {
-            const querySnapshot = await getDocs(collection(db, "felhasznolok"));
-            const tbody = document.getElementById('user-list-body');
-            tbody.innerHTML = "";
-            querySnapshot.forEach((userDoc) => {
-                const userData = userDoc.data();
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${userData.email || 'N/A'}</td>
-                    <td><b style="color:var(--accent)">${userData.rang}</b></td>
-                    <td>
-                        <button onclick="updateUserRank('${userDoc.id}', 'admin')">Admin</button>
-                        <button onclick="updateUserRank('${userDoc.id}', 'user')">User</button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
         }
 
         window.updateUserRank = async (uid, newRank) => {
@@ -354,20 +356,12 @@
 
             try {
                 const cred = await createUserWithEmailAndPassword(auth, email, pass);
-                
-                // --- E-MAIL MEGERŐSÍTÉS KÜLDÉSE ---
                 await sendEmailVerification(cred.user);
-                
                 await setDoc(doc(db, "felhasznolok", cred.user.uid), {
-                    email: email,
-                    nev: name,
-                    rang: "user"
+                    email: email, nev: name, rang: "user"
                 });
-                
                 await saveLog("Új regisztráció (megerősítés kiküldve): " + email);
                 notify("Sikeres regisztráció! Ellenőrizd az e-mailedet a megerősítéshez.");
-                
-                // Kijelentkeztetés a megerősítésig
                 await signOut(auth);
                 closeModals();
             } catch (e) { notify("Hiba: " + e.message, "var(--error)"); }
@@ -386,12 +380,10 @@
             await saveLog(n ? "Szünet AKTIVÁLVA" : "Szünet KIKAPCSOLVA");
         };
 
-
         const dict = {
             hu: { title: "Osztály Hetesei", eheti: "Eheti hetesek", jovo: "Jövő heti:", feladat: "Feladatok", tasks: ["<b>Takarítás</b> nap végén 🧹", "<b>Tábla törlése </b> szünetkben 🧼", "<b>Ablakok bezárása </b> nap végén 🪟", "<b>Székek felrakása </b> nap végén 🪑", "<b>Hiányzók</b> számon tartása 📝", "<b>Tanár értesítése</b> 5 perc után 🔔"] },
             en: { title: "Class Monitors", eheti: "Current", jovo: "Next week:", feladat: "Tasks", tasks: ["Cleaning 🧹", "Board 🧼", "Windows 🪟", "Chairs 🪑", "Absentees 📝", "Teacher 🔔"] }
         };
-
 
         window.changeLang = () => {
             const l = document.getElementById('lang-select').value;
@@ -420,9 +412,6 @@
         window.toggleTheme = () => {
             const newTheme = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
             document.documentElement.setAttribute('data-theme', newTheme);
-            if(auth.currentUser) {
-                document.body.style.backgroundImage = newTheme === 'light' ? "url('background/index.light.png')" : "url('background/index.dark.png')";
-            }
         };
         window.openModal = (id) => { closeModals(); document.getElementById(id).style.display = 'flex'; };
         window.closeModals = () => document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none');
@@ -433,10 +422,34 @@
                 setTimeout(() => t.style.display = 'none', 3000);
             }
         }
+
+        // --- ESEMÉNY KEZELÉS ---
+        function initEvents() {
+            const now = new Date();
+            const mo = String(now.getMonth() + 1).padStart(2, '0');
+            const da = String(now.getDate()).padStart(2, '0');
+            const key = `${mo}-${da}`;
+            const events = napiEsemenyek[key];
+
+            if (events) {
+                const toast = document.getElementById('event-toast');
+                document.getElementById('event-toast-text').innerText = events.join(", ");
+                document.getElementById('event-full-list').innerHTML = "<ul>" + events.map(e => `<li>${e}</li>`).join('') + "</ul>";
+                toast.style.display = 'block';
+                setTimeout(() => {
+                    toast.style.opacity = '0';
+                    toast.style.transition = 'opacity 0.5s';
+                    setTimeout(() => toast.style.display = 'none', 500);
+                }, 5000);
+            }
+        }
+
+        window.showEventDetails = () => document.getElementById('event-detail-modal').style.display = 'flex';
+        window.closeEventModal = () => document.getElementById('event-detail-modal').style.display = 'none';
+
         changeLang();
-        
-        // INDÍTÁS
         checkAnnouncement();
+        initEvents();
     </script>
 </body>
 </html>
