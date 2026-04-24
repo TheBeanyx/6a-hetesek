@@ -85,7 +85,6 @@
 
         @keyframes zoomFade { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
 
-        /* ÚJ STÍLUSOK AZ ESEMÉNYEKHEZ */
         #event-toast {
             position: fixed; bottom: 20px; right: 20px; background: var(--card); border: 2px solid var(--accent);
             padding: 15px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 4000;
@@ -211,7 +210,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, doc, onSnapshot, updateDoc, getDoc, collection, addDoc, query, orderBy, limit, serverTimestamp, getDocs, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, doc, onSnapshot, updateDoc, getDoc, collection, addDoc, query, orderBy, limit, serverTimestamp, getDocs, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, createUserWithEmailAndPassword, sendEmailVerification } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = {
@@ -228,7 +227,6 @@
         const auth = getAuth(app);
         const docRef = doc(db, "osztaly", "beallitas");
 
-        // --- JAVÍTOTT MENTÉSI LOGIKA ---
         function checkAnnouncement() {
             try {
                 const isRead = localStorage.getItem('announcementRead');
@@ -273,6 +271,55 @@
                 loadUsers();
                 saveLog(`Rang módosítás: ${uid} -> ${newRank}`);
             } catch (e) { notify("Hiba!", "var(--error)"); }
+        };
+
+        // --- FELHASZNÁLÓK BETÖLTÉSE ---
+        async function loadUsers() {
+            const tbody = document.getElementById('user-list-body');
+            if (!tbody) return;
+            tbody.innerHTML = "<tr><td colspan='3'>Betöltés...</td></tr>";
+            
+            try {
+                const querySnapshot = await getDocs(collection(db, "felhasznolok"));
+                tbody.innerHTML = "";
+                querySnapshot.forEach((userDoc) => {
+                    const userData = userDoc.data();
+                    const userId = userDoc.id;
+                    const tr = document.createElement('tr');
+                    
+                    tr.innerHTML = `
+                        <td>${userData.email || 'N/A'}</td>
+                        <td>
+                            <select onchange="updateUserRank('${userId}', this.value)">
+                                <option value="user" ${userData.rang === 'user' ? 'selected' : ''}>User</option>
+                                <option value="admin" ${userData.rang === 'admin' ? 'selected' : ''}>Admin</option>
+                                <option value="superadmin" ${userData.rang === 'superadmin' ? 'selected' : ''}>Superadmin</option>
+                            </select>
+                        </td>
+                        <td>
+                            <button onclick="deleteUser('${userId}')" style="background:var(--error); color:white; border:none; padding:4px 8px; border-radius:5px; cursor:pointer;">Törlés</button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } catch (e) {
+                console.error("Hiba a felhasználók betöltésekor: ", e);
+                tbody.innerHTML = "<tr><td colspan='3'>Hiba történt.</td></tr>";
+            }
+        }
+        window.loadUsers = loadUsers;
+
+        window.deleteUser = async (uid) => {
+            if (confirm("Biztosan törlöd ezt a felhasználót?")) {
+                try {
+                    await deleteDoc(doc(db, "felhasznolok", uid));
+                    notify("Felhasználó törölve");
+                    loadUsers();
+                    saveLog(`Felhasználó törölve: ${uid}`);
+                } catch (e) {
+                    notify("Hiba a törlésnél!", "var(--error)");
+                }
+            }
         };
 
         onSnapshot(query(collection(db, "naplo"), orderBy("idopont", "desc"), limit(15)), (snap) => {
@@ -382,7 +429,7 @@
 
         const dict = {
             hu: { title: "Osztály Hetesei", eheti: "Eheti hetesek", jovo: "Jövő heti:", feladat: "Feladatok", tasks: ["<b>Takarítás</b> nap végén 🧹", "<b>Tábla törlése </b> szünetkben 🧼", "<b>Ablakok bezárása </b> nap végén 🪟", "<b>Székek felrakása </b> nap végén 🪑", "<b>Hiányzók</b> számon tartása 📝", "<b>Tanár értesítése</b> 5 perc után 🔔"] },
-            en: { title: "Class Monitors", eheti: "Current", jovo: "Next week:", feladat: "Tasks", tasks: ["Cleaning 🧹", "Board 🧼", "Windows 🪟", "Chairs 🪑", "Absentees 📝", "Teacher 🔔"] }
+            en: { title: "Class Monitors", eheti: "Current", jovo: "Next week:", feladat: "Tasks", tasks: ["Cleaning 🧹", "Board 🧼", "Windows 🪟", "Chairs 👑", "Absentees 📝", "Teacher 🔔"] }
         };
 
         window.changeLang = () => {
@@ -415,6 +462,7 @@
         };
         window.openModal = (id) => { closeModals(); document.getElementById(id).style.display = 'flex'; };
         window.closeModals = () => document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none');
+        
         function notify(msg, color = "var(--accent)") {
             const t = document.getElementById('toast');
             if(t) {
@@ -423,24 +471,24 @@
             }
         }
 
-        // --- ESEMÉNY KEZELÉS ---
         function initEvents() {
             const now = new Date();
             const mo = String(now.getMonth() + 1).padStart(2, '0');
             const da = String(now.getDate()).padStart(2, '0');
             const key = `${mo}-${da}`;
-            const events = napiEsemenyek[key];
-
-            if (events) {
-                const toast = document.getElementById('event-toast');
-                document.getElementById('event-toast-text').innerText = events.join(", ");
-                document.getElementById('event-full-list').innerHTML = "<ul>" + events.map(e => `<li>${e}</li>`).join('') + "</ul>";
-                toast.style.display = 'block';
-                setTimeout(() => {
-                    toast.style.opacity = '0';
-                    toast.style.transition = 'opacity 0.5s';
-                    setTimeout(() => toast.style.display = 'none', 500);
-                }, 5000);
+            if (typeof napiEsemenyek !== 'undefined') {
+                const events = napiEsemenyek[key];
+                if (events) {
+                    const toast = document.getElementById('event-toast');
+                    document.getElementById('event-toast-text').innerText = events.join(", ");
+                    document.getElementById('event-full-list').innerHTML = "<ul>" + events.map(e => `<li>${e}</li>`).join('') + "</ul>";
+                    toast.style.display = 'block';
+                    setTimeout(() => {
+                        toast.style.opacity = '0';
+                        toast.style.transition = 'opacity 0.5s';
+                        setTimeout(() => toast.style.display = 'none', 500);
+                    }, 5000);
+                }
             }
         }
 
