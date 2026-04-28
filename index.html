@@ -351,7 +351,7 @@
                 document.getElementById('logout-btn').style.display = 'block';
                 
                 const isLight = document.documentElement.getAttribute('data-theme') === 'light';
-                document.body.style.backgroundImage = isLight ? "url('background/index.light.png')" : "url('backgroundindex.dark.png')";
+                document.body.style.backgroundImage = isLight ? "url('background/index.light.png')" : "url('background/index.dark.png')";
 
                 const u = await getDoc(doc(db, "felhasznolok", user.uid));
                 if (u.exists()) {
