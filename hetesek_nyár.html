@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <title>6.A Hetesek - Nyári Szünet Edition</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <style>
+        :root {
+            --bg: #1a0f00; 
+            --bg-gradient: linear-gradient(135deg, #2e1a47 0%, #fc5c7d 50%, #6a82fb 100%);
+            --card: rgba(255, 255, 255, 0.12);
+            --card-border: rgba(255, 255, 255, 0.2);
+            --accent: #ffee55; 
+            --accent-hover: #fff377;
+            --accent-glow: rgba(255, 238, 85, 0.4);
+            --text: #ffffff;
+            --text-muted: #ffe3e3;
+            --shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+            --shadow-hover: 0 25px 50px rgba(255, 238, 85, 0.15);
+        }
+
+        body {
+            margin: 0; 
+            font-family: 'Inter', sans-serif; 
+            background: var(--bg-gradient);
+            background-attachment: fixed;
+            background-size: cover;
+            background-position: center;
+            color: var(--text); 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center;
+            min-height: 100vh; 
+            padding: 20px; 
+            box-sizing: border-box;
+        }
+
+        .header-section {
+            text-align: center;
+            margin: 60px 0 30px 0;
+            max-width: 600px;
+        }
+
+        h1 { 
+            font-family: 'Lora', serif;
+            font-size: 3rem;
+            color: var(--text); 
+            margin: 0 0 10px 0;
+            letter-spacing: -0.5px;
+            text-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        .status-bar {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            font-weight: 500;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            background: rgba(0,0,0,0.2);
+            padding: 8px 20px;
+            border-radius: 30px;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 24px;
+            width: 100%;
+            max-width: 1000px;
+        }
+
+        @media (min-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .card {
+            background: var(--card); 
+            border: 1px solid var(--card-border); 
+            border-radius: 24px;
+            padding: 30px; 
+            box-shadow: var(--shadow); 
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
+            box-sizing: border-box;
+        }
+
+        .card:hover {
+            transform: translateY(-6px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .card h3 {
+            margin-top: 0;
+            font-family: 'Lora', serif;
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: var(--accent);
+        }
+
+        .names-flex {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .name-box { 
+            font-size: 2.2rem; 
+            font-weight: 800; 
+            padding: 24px; 
+            background: linear-gradient(90deg, rgba(255,238,85,0.2), rgba(255,255,255,0.05)); 
+            border-radius: 16px; 
+            border-left: 6px solid var(--accent); 
+            text-align: center;
+            letter-spacing: 4px;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            animation: pulseBeach 2s infinite alternate;
+        }
+
+        @keyframes pulseBeach {
+            from { transform: scale(1); }
+            to { transform: scale(1.02); }
+        }
+
+        .top-controls { 
+            position: absolute; 
+            top: 20px; 
+            right: 20px; 
+            display: flex; 
+            align-items: center;
+            gap: 10px; 
+            z-index: 100; 
+        }
+        
+        button { 
+            background: var(--text); 
+            color: #000;
+            border: none;
+            padding: 12px 24px; 
+            border-radius: 12px; 
+            cursor: pointer; 
+            font-weight: 600; 
+            font-size: 0.95rem;
+            transition: all 0.2s ease; 
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            user-select: none;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        }
+        
+        button:hover { 
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn-outline {
+            background: rgba(255,255,255,0.15);
+            border: 1px solid var(--card-border);
+            color: var(--text);
+        }
+        .btn-outline:hover {
+            background: rgba(255,255,255,0.25);
+        }
+
+        .btn-accent {
+            background: var(--accent);
+            color: #5c3a00;
+        }
+        .btn-accent:hover {
+            background: var(--accent-hover);
+            box-shadow: 0 0 20px var(--accent-glow);
+        }
+
+        .task-list { list-style: none; padding: 0; margin: 0; text-align: left; }
+        .task-list li { 
+            margin: 14px 0; 
+            padding: 16px 16px 16px 48px; 
+            position: relative; 
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 14px;
+            font-size: 1rem;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .task-list li::before { 
+            content: "☀️"; 
+            position: absolute; 
+            left: 16px; 
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.2rem;
+        }
+
+        #animation-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.75);
+            z-index: 9999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+        #anim-canvas {
+            background: #fff;
+            border-radius: 24px;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.5);
+            max-width: 90%;
+            max-height: 90%;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="animation-overlay">
+        <canvas id="anim-canvas" width="500" height="500"></canvas>
+    </div>
+
+    <div class="top-controls">
+        <select id="lang-select" onchange="changeLang()" style="width: auto; margin: 0; padding: 10px 14px; border-radius: 10px; background: rgba(0,0,0,0.4); color: white; border: 1px solid var(--card-border);">
+            <option value="hu">HU</option>
+            <option value="en">EN</option>
+        </select>
+        <button class="btn-outline" onclick="triggerTimelapse('drink')" title="Hűsítő üdítő">🍹</button>
+        <button id="auth-trigger" class="btn-accent" onclick="triggerTimelapse('sea')">🌊</button>
+    </div>
+
+    <div class="header-section">
+        <div id="welcome-message" style="font-size: 1rem; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: var(--accent); margin-bottom: 8px;">🏝️ Szia! Jó pihenést!</div>
+        <h1 id="main-title">Nyári Szünet</h1>
+        <div class="status-bar">
+            <span id="current-date"></span>
+            <span style="opacity:0.5;">|</span>
+            <span id="current-time" style="font-weight: 700; color: var(--accent);"></span>
+        </div>
+    </div>
+
+    <div class="dashboard-grid">
+        <div class="card">
+            <h3 id="h-eheti">Hetesek:</h3>
+            <div class="names-flex">
+                <div class="name-box">VAKÁCIÓ</div>
+            </div>
+            
+            <div style="margin-top: 25px; text-align: center; font-size: 1rem; color: var(--text-muted); line-height: 1.6;">
+                🏖️ <span id="h-jovo">Nincs több iskola, nincs több hetes feladat! Élvezd a napsütést és a pihenést!</span>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3 id="h-feladat">Kötelező nyári „feladatok”</h3>
+            <ul class="task-list" id="task-list"></ul>
+        </div>
+    </div>
+
+    <script>
+        function startLiveClock() {
+            const timeEl = document.getElementById('current-time');
+            function updateClock() {
+                const now = new Date();
+                if (timeEl) {
+                    timeEl.innerText = now.toLocaleTimeString('hu-HU', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                }
+            }
+            updateClock();
+            setInterval(updateClock, 1000);
+        }
+
+        const dict = {
+            hu: { 
+                title: "Nyári Szünet", 
+                eheti: "Aktuális státusz", 
+                jovo: "Nincs több iskola, nincs több hetes feladat! Élvezd a napsütést és a pihenést!", 
+                feladat: "Kötelező nyári „feladatok”", 
+                tasks: [
+                    "Sok-sok <b>fagylalt</b> elfogyasztása 🍦", 
+                    "Késő esti <b>filmezések</b> és alvás délutánig 🛌", 
+                    "Nagy csobbanások a <b>strandon</b> vagy medencében 🏊", 
+                    "Barátokkal való <b>közös játékok</b> és biciklizés 🚴", 
+                    "A tankönyvek jó mélyre való <b>elpakolása</b> 📚❌", 
+                    "A feltöltődés és a <b>maximális pihenés</b> 😴"
+                ] 
+            },
+            en: { 
+                title: "Summer Holidays", 
+                eheti: "Current Status", 
+                jovo: "No more school, no more monitor duties! Enjoy the sunshine and relax!", 
+                feladat: "Mandatory Summer Tasks", 
+                tasks: [
+                    "Eating lots and lots of <b>ice cream</b> 🍦", 
+                    "Late night <b>movies</b> and sleeping until noon 🛌", 
+                    "Big splashes in the <b>beach</b> or pool 🏊", 
+                    "Hanging out and <b>riding bikes</b> with friends 🚴", 
+                    "Putting away textbooks <b>very deep</b> 📚❌", 
+                    "Recharging batteries and <b>maximum chilling</b> 😴"
+                ] 
+            }
+        };
+
+        window.changeLang = () => {
+            const l = document.getElementById('lang-select').value;
+            document.getElementById('main-title').innerText = dict[l].title;
+            document.getElementById('h-eheti').innerText = dict[l].eheti;
+            document.getElementById('h-jovo').innerHTML = dict[l].jovo;
+            document.getElementById('h-feladat').innerText = dict[l].feladat;
+            document.getElementById('task-list').innerHTML = dict[l].tasks.map(t => `<li><span>${t}</span></li>`).join('');
+            document.getElementById('current-date').innerText = new Date().toLocaleDateString(l==='hu'?'hu-HU':'en-US', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
+        };
+
+        // ===================================================
+        // PÁRHUZAMOS & GYORSÍTOTT TIMELAPSE MOTOR
+        // ===================================================
+        const overlay = document.getElementById('animation-overlay');
+        const canvas = document.getElementById('anim-canvas');
+        const ctx = canvas.getContext('2d');
+        let activeAnimations = [];
+
+        function triggerTimelapse(type) {
+            overlay.style.display = 'flex';
+            overlay.style.opacity = '1';
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.lineWidth = 4;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            
+            let paths = [];
+            
+            if (type === 'drink') {
+                paths = [
+                    { color: '#333', points: [{x:180, y:150}, {x:200, y:380}, {x:300, y:380}, {x:320, y:150}, {x:180, y:150}], fill: false },
+                    { color: '#ff6b6b', points: [{x:195, y:220}, {x:305, y:220}, {x:290, y:370}, {x:210, y:370}, {x:195, y:220}], fill: true },
+                    { color: '#4ecdc4', points: [{x:250, y:350}, {x:220, y:100}, {x:180, y:80}], fill: false },
+                    { color: '#ffe66d', points: [{x:180, y:150}, {x:150, y:130}, {x:140, y:160}, {x:165, y:180}, {x:180, y:150}], fill: true },
+                    { color: '#333', points: [{x:230, y:300}, {x:232, y:300}], fill: false },
+                    { color: '#333', points: [{x:270, y:260}, {x:272, y:260}], fill: false },
+                    { color: '#333', points: [{x:210, y:250}, {x:212, y:250}], fill: false }
+                ];
+            } else if (type === 'sea') {
+                paths = [
+                    { color: '#ffe66d', points: [{x:250, y:250}, {x:200, y:200}, {x:300, y:200}, {x:250, y:250}], fill: true },
+                    { color: '#333', points: [{x:50, y:250}, {x:450, y:250}], fill: false },
+                    { color: '#4ecdc4', points: [{x:50, y:270}, {x:150, y:265}, {x:250, y:275}, {x:350, y:265}, {x:450, y:270}], fill: false },
+                    { color: '#00d2da', points: [{x:70, y:300}, {x:200, y:290}, {x:320, y:310}, {x:430, y:295}], fill: false },
+                    { color: '#ffeaa7', points: [{x:50, y:450}, {x:200, y:380}, {x:450, y:330}, {x:450, y:450}, {x:50, y:450}], fill: true },
+                    { color: '#d63031', points: [{x:380, y:350}, {x:400, y:250}, {x:430, y:150}], fill: false },
+                    { color: '#2ecc71', points: [{x:430, y:150}, {x:360, y:130}], fill: false },
+                    { color: '#2ecc71', points: [{x:430, y:150}, {x:380, y:180}], fill: false },
+                    { color: '#2ecc71', points: [{x:430, y:150}, {x:480, y:120}], fill: false },
+                    { color: '#2ecc71', points: [{x:430, y:150}, {x:460, y:180}], fill: false }
+                ];
+            }
+
+            // Elindítjuk az összes vonal rajzolását EGYSZERRE (párhuzamosan)
+            activeAnimations = paths.map(path => {
+                return {
+                    path: path,
+                    currentPointIndex: 0,
+                    progress: 0
+                };
+            });
+
+            runParallelAnimation(type === 'sea');
+        }
+
+        function runParallelAnimation(isSea) {
+            let allDone = true;
+
+            // Ciklusonként minden aktív vonalat kicsit tovább húzunk (Nagy sebességű lépésközzel)
+            activeAnimations.forEach(anim => {
+                const pts = anim.path.points;
+                if (anim.currentPointIndex < pts.length - 1) {
+                    allDone = false;
+                    
+                    ctx.strokeStyle = anim.path.color;
+                    ctx.beginPath();
+                    
+                    let startPt = pts[anim.currentPointIndex];
+                    let endPt = pts[anim.currentPointIndex + 1];
+                    
+                    ctx.moveTo(startPt.x + (endPt.x - startPt.x) * anim.progress, startPt.y + (endPt.y - startPt.y) * anim.progress);
+                    
+                    // Növeljük a haladást (0.25 azt jelenti, hogy 4 képkocka alatt húz ki egy egész vonalat!)
+                    anim.progress += 0.25; 
+                    
+                    if (anim.progress >= 1) {
+                        ctx.lineTo(endPt.x, endPt.y);
+                        anim.currentPointIndex++;
+                        anim.progress = 0;
+                    } else {
+                        ctx.lineTo(startPt.x + (endPt.x - startPt.x) * anim.progress, startPt.y + (endPt.y - startPt.y) * anim.progress);
+                    }
+                    ctx.stroke();
+                } else if (anim.path.fill) {
+                    // Ha a körvonal kész, azonnal kitöltjük a színével
+                    ctx.fillStyle = anim.path.color;
+                    ctx.beginPath();
+                    ctx.moveTo(pts[0].x, pts[0].y);
+                    for(let i=1; i<pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
+                    ctx.fill();
+                    anim.path.fill = false; // Csak egyszer töltse ki
+                }
+            });
+
+            if (!allDone) {
+                requestAnimationFrame(() => runParallelAnimation(isSea));
+            } else {
+                // Ha minden kész, egy pillanat múlva eltűnik
+                setTimeout(() => {
+                    overlay.style.transition = 'opacity 0.4s ease';
+                    overlay.style.opacity = '0';
+                    setTimeout(() => {
+                        overlay.style.display = 'none';
+                        if (isSea && typeof confetti === 'function') {
+                            confetti({ particleCount: 80, spread: 60, origin: { y: 0.6 } });
+                        }
+                    }, 400);
+                }, 500);
+            }
+        }
+
+        changeLang();
+        startLiveClock();
+    </script>
+</body>
+</html>
