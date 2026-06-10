@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@600;700&family=Lora:ital,wght=0,700;1,400&display=swap" rel="stylesheet">
+    <title>6.A - Búcsúzás</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #090d16 100%);
+            --accent: #00f6ff; 
+            --accent-glow: rgba(0, 246, 255, 0.3);
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        body {
+            margin: 0; 
+            padding: 0;
+            font-family: 'Inter', sans-serif; 
+            background: var(--bg-gradient);
+            color: var(--text); 
+            display: flex; 
+            justify-content: center;
+            align-items: center;
+            height: 100vh; 
+            overflow: hidden;
+            box-sizing: border-box;
+        }
+
+        .finale-card {
+            background: rgba(30, 41, 59, 0.7); 
+            border: 1px solid rgba(255, 255, 255, 0.08); 
+            border-radius: 28px;
+            padding: 50px 60px; 
+            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.7); 
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            text-align: center;
+            max-width: 800px; 
+            width: 95%;
+            box-sizing: border-box;
+        }
+
+        .intro-title {
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 25px;
+            font-weight: 600;
+        }
+
+        .name-display-box { 
+            font-family: 'Lora', serif;
+            font-size: 3.2rem; 
+            font-weight: 700; 
+            padding: 24px 40px; 
+            background: rgba(128,128,128,0.03); 
+            border-radius: 18px; 
+            border-left: 6px solid var(--accent); 
+            text-align: center;
+            color: var(--accent);
+            text-shadow: 0 0 20px var(--accent-glow);
+            box-shadow: inset 0 1px 2px rgba(255,255,255,0.05);
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 20px;
+        }
+
+
+        .start-btn {
+            background: linear-gradient(135deg, #00f6ff 0%, #00a8ff 100%);
+            color: #090d16;
+            border: none;
+            border-radius: 50px;
+            padding: 16px 40px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            cursor: pointer;
+            box-shadow: 0 0 20px rgba(0, 246, 255, 0.4);
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .start-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 30px rgba(0, 246, 255, 0.7);
+        }
+
+        .start-btn:active {
+            transform: scale(0.98);
+        }
+
+        .curtain {
+            position: fixed;
+            top: 0;
+            width: 50%;
+            height: 100%;
+            z-index: 99999;
+            transition: transform 4.5s cubic-bezier(0.25, 1, 0.5, 1);
+            pointer-events: none;
+            background: linear-gradient(to right, #7a0000 0%, #b30000 20%, #e60000 50%, #b30000 80%, #7a0000 100%);
+            box-shadow: inset -15px 0 30px rgba(0,0,0,0.6), inset 15px 0 30px rgba(0,0,0,0.6);
+        }
+
+        .curtain::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: repeating-linear-gradient(
+                90deg,
+                rgba(0, 0, 0, 0.22) 0px,
+                rgba(0, 0, 0, 0.22) 20px,
+                rgba(255, 255, 255, 0.12) 40px,
+                rgba(0, 0, 0, 0.22) 60px
+            );
+            filter: blur(2px);
+            mix-blend-mode: multiply;
+        }
+
+        .curtain-left {
+            left: 0;
+            transform: translateX(-102%); 
+            border-right: 6px solid #cc9933; 
+        }
+
+        .curtain-right {
+            right: 0;
+            transform: translateX(102%);
+            border-left: 6px solid #cc9933; 
+        }
+
+        .curtains-closed .curtain-left {
+            transform: translateX(0);
+            pointer-events: auto;
+        }
+
+        .curtains-closed .curtain-right {
+            transform: translateX(0);
+            pointer-events: auto;
+        }
+
+        .the-end-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 100000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 1.5s ease-in-out;
+            transition-delay: 4.2s; 
+            text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
+            pointer-events: none;
+        }
+
+        .the-end-screen.visible {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+        }
+
+        .the-end-box {
+            background: rgba(20, 20, 20, 0.65);
+            border: 2px solid rgba(204, 153, 51, 0.3);
+            border-radius: 24px;
+            padding: 40px 60px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            max-width: 700px;
+            width: 90%;
+            box-sizing: border-box;
+        }
+
+        .the-end-title {
+            font-family: 'Lora', serif;
+            font-size: 5.5rem;
+            color: #cc9933;
+            text-shadow: 0 0 35px rgba(204, 153, 51, 0.5);
+            margin: 0 0 20px 0;
+            letter-spacing: 8px;
+            font-weight: 700;
+        }
+
+        .final-message {
+            font-family: 'Lora', serif;
+            font-size: 1.6rem;
+            color: #ffffff;
+            line-height: 1.8;
+            margin: 0;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+    <audio id="bg-music" src="zene.bucsu.mp3" preload="auto"></audio>
+
+    <div class="finale-card">
+        <div class="intro-title">Az osztály tagjai...</div>
+        <div class="name-display-box" id="name-box">Betöltés...</div>
+        <button class="start-btn" id="start-btn" style="display: none;">Indítás</button>
+    </div>
+
+    <div class="curtain curtain-left" id="left-curtain"></div>
+    <div class="curtain curtain-right" id="right-curtain"></div>
+
+    <div class="the-end-screen" id="end-screen">
+        <div class="the-end-box">
+            <h1 class="the-end-title">VÉGE</h1>
+            <p class="final-message">
+                "A búcsú néha nehéz...<br>
+                „Nehéz a búcsú, ha tudjuk, hogy végleges.” <br>
+             (Charles Martin)<br>
+                <span style="color: #cc9933; display:block; margin-top:25px; font-weight:bold; font-style: normal;">- Buzás Benedek</span>
+            </p>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCTBGoX-vztuuxOzLz7gkFA4bqiMvKuEwI",
+            authDomain: "hetesek-6.firebaseapp.com",
+            projectId: "hetesek-6",
+            storageBucket: "hetesek-6.firebasestorage.app",
+            messagingSenderId: "429344638911",
+            appId: "1:429344638911:web:a4dc1bedc94caad6d1830a"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const docRef = doc(db, "osztaly", "beallitas");
+
+        const nameBox = document.getElementById('name-box');
+        const startBtn = document.getElementById('start-btn');
+        const bgMusic = document.getElementById('bg-music');
+        let globalNevsor = [];
+
+        async function loadData() {
+            try {
+                const snap = await getDoc(docRef);
+                if (snap.exists() && snap.data().nevsor) {
+                    const data = snap.data();
+                    data.nevsor.forEach(par => {
+                        if(par.a) globalNevsor.push(par.a);
+                        if(par.b) globalNevsor.push(par.b);
+                    });
+
+                    if (globalNevsor.length > 0) {
+                        nameBox.innerText = "Indítás...";
+                        startBtn.style.display = "inline-block"; 
+                    } else {
+                        nameBox.innerText = "Üres a névsor!";
+                    }
+                } else {
+                    nameBox.innerText = "Hiba a betöltéskor!";
+                }
+            } catch (e) {
+                console.error(e);
+                nameBox.innerText = "Adatbázis hiba!";
+            }
+        }
+
+
+        startBtn.addEventListener('click', () => {
+            startBtn.style.display = "none"; 
+            
+
+            bgMusic.play().catch(err => console.log("Audio lejátszási hiba (CORS/User gesture):", err));
+            
+
+            setTimeout(startSpinning, 200);
+        });
+
+        function startSpinning() {
+            let currentDelay = 800; 
+            let minDelay = 25;     
+            let idx = 0;
+
+            function spin() {
+                nameBox.innerText = globalNevsor[idx];
+                idx = (idx + 1) % globalNevsor.length;
+
+if (currentDelay > 400) {
+    currentDelay -= 25;  // 100 helyett csak 25-tel csökken, így tovább marad lassú
+} else if (currentDelay > 150) {
+    currentDelay -= 15;  // 40 helyett csak 15-tel csökken
+} else if (currentDelay > minDelay) {
+    currentDelay -= 4;   // 8 helyett csak 4-gyel csökken
+}
+
+                if (currentDelay > minDelay) {
+                    setTimeout(spin, currentDelay);
+                } else {
+                    let rapidSpins = setInterval(() => {
+                        nameBox.innerText = globalNevsor[idx];
+                        idx = (idx + 1) % globalNevsor.length;
+                    }, minDelay);
+
+                    setTimeout(() => {
+                        clearInterval(rapidSpins);
+                        
+                        document.body.classList.add('curtains-closed');
+                        document.getElementById('end-screen').classList.add('visible');
+                        
+                        setTimeout(() => {
+                            confetti({ particleCount: 180, spread: 100, origin: { y: 0.6 } });
+                        }, 4500);
+
+                    }, 2000);
+                }
+            }
+            spin();
+        }
+
+        window.onload = loadData;
+    </script>
+</body>
+</html>
